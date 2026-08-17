@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>say-my-name fixtures</title>
+    <script type="module" src="/dist/say-my-name.js"></script>
+  </head>
+  <body>
+    <h1>Fixtures</h1>
+
+    <p id="case-audio">
+      <say-my-name audio="/test/fixtures/tone.wav" respell="zhah-EEL-sown" lang="pt-BR">
+        Jailson
+      </say-my-name>
+    </p>
+
+    <p id="case-ipa">
+      <say-my-name ipa="ʒaˈiwsõ" respell="zhah-EEL-sown" lang="pt-BR" tts="off" audio="/test/fixtures/tone.wav">
+        Jailson
+      </say-my-name>
+    </p>
+
+    <p id="case-ruby">
+      <say-my-name display="ruby" respell="zhah-EEL-sown" ipa="ʒaˈiwsõ" audio="/test/fixtures/tone.wav">
+        Jailson
+      </say-my-name>
+    </p>
+
+    <p id="case-variants">
+      <say-my-name display="ruby">
+        Jailson
+        <script type="application/json">
+          [
+            {"label": "Portuguese", "lang": "pt-BR", "audio": "/test/fixtures/tone.wav",
+             "respell": "zhah-EEL-sown", "ipa": "ʒaˈiwsõ"},
+            {"label": "Anglicized", "lang": "en-CA", "audio": "/test/fixtures/tone.wav",
+             "respell": "JAY-ill-sun"}
+          ]
+        </script>
+      </say-my-name>
+    </p>
+
+    <p id="case-silent">
+      <say-my-name tts="off" respell="zhah-EEL-sown">Jailson</say-my-name>
+    </p>
+
+    <p id="case-tts">
+      <say-my-name lang="en-US" tts="on">Jailson</say-my-name>
+    </p>
+
+    <p id="case-missing-audio">
+      <say-my-name audio="/test/fixtures/does-not-exist.wav" tts="off">Jailson</say-my-name>
+    </p>
+  </body>
+</html>

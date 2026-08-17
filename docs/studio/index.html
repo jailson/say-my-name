@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Studio — record your name · say-my-name</title>
+    <meta
+      name="description"
+      content="Record your name in the browser, trim it, download the audio, and copy the snippet. Nothing is uploaded."
+    />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="./studio.css" />
+    <script type="module" src="../vendor/say-my-name.js"></script>
+    <script type="module" src="./studio.js"></script>
+  </head>
+  <body>
+    <header class="hero">
+      <p class="eyebrow"><a href="../">say-my-name</a> / studio</p>
+      <h1>Record your name</h1>
+      <p class="lede">
+        Record, trim, download, paste. Everything happens in this tab — the audio never
+        leaves your device, there is no account, and there is no server to upload to.
+      </p>
+    </header>
+
+    <main>
+      <section>
+        <h2>1 · Your name</h2>
+        <div class="field">
+          <label for="name">Name as it's written</label>
+          <input id="name" type="text" value="Jailson" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="audio-path">Where the audio will live on your site</label>
+          <input id="audio-path" type="text" value="/audio/" autocomplete="off" />
+          <p class="hint">Used to build the snippet. Upload the files there yourself.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>2 · Pronunciations</h2>
+        <p class="hint">
+          Add more than one if your name has a native pronunciation and a local one. Both are
+          correct, and the widget will offer both.
+        </p>
+        <div id="takes"></div>
+        <button id="add-take" class="button ghost" type="button">+ Add another pronunciation</button>
+      </section>
+
+      <section>
+        <h2>3 · Preview</h2>
+        <p class="hint">This is the real component, running on what you just recorded.</p>
+        <div class="preview" id="preview"></div>
+        <div class="field">
+          <label for="display">Display style</label>
+          <select id="display">
+            <option value="inline">inline — phonetics beside the name</option>
+            <option value="ruby" selected>ruby — phonetics above the name</option>
+            <option value="tooltip">tooltip — on hover or focus</option>
+            <option value="none">none — just the button</option>
+          </select>
+        </div>
+      </section>
+
+      <section>
+        <h2>4 · Copy the snippet</h2>
+        <pre><code id="snippet"></code></pre>
+        <p class="cta">
+          <button id="copy" class="button" type="button">Copy snippet</button>
+          <span id="copy-status" class="hint" role="status" aria-live="polite"></span>
+        </p>
+        <p class="hint">
+          The snippet assumes the component is already on the page:<br />
+          <code>&lt;script type="module" src="https://cdn.jsdelivr.net/npm/say-my-name@0"&gt;&lt;/script&gt;</code>
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Nothing on this page is uploaded ·
+        <a href="https://github.com/jailson/say-my-name">source</a>
+      </p>
+    </footer>
+
+    <template id="take-template">
+      <article class="take">
+        <header class="take-head">
+          <h3 class="take-title">Pronunciation</h3>
+          <button class="remove" type="button" aria-label="Remove this pronunciation">Remove</button>
+        </header>
+
+        <div class="grid">
+          <div class="field">
+            <label>Label <span class="hint">shown when there's more than one</span></label>
+            <input class="in-label" type="text" placeholder="Portuguese" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>Language</label>
+            <input class="in-lang" type="text" placeholder="pt-BR" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>Respelling <span class="hint">for humans to read</span></label>
+            <input class="in-respell" type="text" placeholder="zhah-EEL-sown" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>IPA <span class="hint">optional</span></label>
+            <input class="in-ipa" type="text" placeholder="ʒaˈiwsõ" autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="recorder">
+          <button class="record button" type="button">● Record</button>
+          <button class="play button ghost" type="button" disabled>▶ Play</button>
+          <span class="rec-status hint" role="status" aria-live="polite">No recording yet</span>
+        </div>
+
+        <canvas class="wave" width="640" height="72" aria-hidden="true" hidden></canvas>
+
+        <div class="trim-row">
+          <label class="checkbox">
+            <input class="in-trim" type="checkbox" checked />
+            Trim silence from the start and end
+          </label>
+        </div>
+
+        <div class="downloads">
+          <button class="dl-wav button ghost" type="button" disabled>Download .wav (trimmed)</button>
+          <button class="dl-raw button ghost" type="button" disabled>Download original take</button>
+          <span class="size hint"></span>
+        </div>
+      </article>
+    </template>
+  </body>
+</html>

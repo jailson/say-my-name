@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>say-my-name — a tiny name-pronunciation web component</title>
+    <meta
+      name="description"
+      content="Show people how to pronounce your name: your own recording, a dictionary-style phonetic spelling, and optional speech synthesis. One tag, no account, no backend."
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./vendor/say-my-name.js"></script>
+  </head>
+  <body>
+    <header class="hero">
+      <p class="eyebrow">say-my-name</p>
+      <h1>
+        Hi, I'm
+        <say-my-name
+          class="hero-name"
+          respell="zhah-EEL-sown"
+          ipa="ʒaˈiwsõ"
+          lang="pt-BR"
+          display="ruby"
+          tts="on"
+        >
+          Jailson
+        </say-my-name>
+      </h1>
+      <p class="lede">
+        A tiny web component that shows people how to say your name — your own recording, a
+        dictionary-style phonetic spelling, and speech synthesis when there is no recording.
+        One tag. No account, no backend, nothing phoning home.
+      </p>
+      <p class="cta">
+        <a class="button" href="./studio/">Record your name →</a>
+        <a class="button ghost" href="https://github.com/jailson/say-my-name">
+          Source on GitHub
+        </a>
+      </p>
+    </header>
+
+    <main>
+      <section>
+        <h2>Install</h2>
+        <p>From a CDN, no build step:</p>
+        <pre><code>&lt;script type="module"
+  src="https://cdn.jsdelivr.net/npm/say-my-name@0"&gt;&lt;/script&gt;
+
+&lt;say-my-name audio="/audio/my-name.opus" respell="zhah-EEL-sown"&gt;
+  Jailson
+&lt;/say-my-name&gt;</code></pre>
+        <p>Or as a package:</p>
+        <pre><code>npm install say-my-name</code></pre>
+        <pre><code>import 'say-my-name';</code></pre>
+      </section>
+
+      <section>
+        <h2>How it looks</h2>
+
+        <div class="demo">
+          <h3>Just a play button</h3>
+          <p class="demo-line">Ask <say-my-name lang="pt-BR" tts="on">Jailson</say-my-name> about it.</p>
+          <pre><code>&lt;say-my-name lang="pt-BR"&gt;Jailson&lt;/say-my-name&gt;</code></pre>
+        </div>
+
+        <div class="demo">
+          <h3>With a respelling, inline</h3>
+          <p class="demo-line">
+            <say-my-name respell="zhah-EEL-sown" lang="pt-BR" tts="on">Jailson</say-my-name>
+          </p>
+          <pre><code>&lt;say-my-name respell="zhah-EEL-sown" lang="pt-BR"&gt;
+  Jailson
+&lt;/say-my-name&gt;</code></pre>
+        </div>
+
+        <div class="demo">
+          <h3>Dictionary style, with IPA</h3>
+          <p class="demo-line">
+            <say-my-name respell="zhah-EEL-sown" ipa="ʒaˈiwsõ" lang="pt-BR" display="ruby" tts="on">
+              Jailson
+            </say-my-name>
+          </p>
+          <pre><code>&lt;say-my-name respell="zhah-EEL-sown" ipa="ʒaˈiwsõ"
+             lang="pt-BR" display="ruby"&gt;
+  Jailson
+&lt;/say-my-name&gt;</code></pre>
+        </div>
+
+        <div class="demo">
+          <h3>More than one right answer</h3>
+          <p class="demo-line">
+            <say-my-name display="ruby" tts="on">
+              Jailson
+              <script type="application/json">
+                [
+                  {
+                    "label": "Portuguese",
+                    "lang": "pt-BR",
+                    "respell": "zhah-EEL-sown",
+                    "ipa": "ʒaˈiwsõ"
+                  },
+                  {
+                    "label": "How I'm called here",
+                    "lang": "en-CA",
+                    "respell": "JAY-ill-sun"
+                  }
+                ]
+              </script>
+            </say-my-name>
+          </p>
+          <p class="note">
+            A name can have a native pronunciation <em>and</em> the one you answer to locally.
+            Both are correct. Most tools make you pick one; this one doesn't.
+          </p>
+          <pre><code>&lt;say-my-name display="ruby"&gt;
+  Jailson
+  &lt;script type="application/json"&gt;
+    [{"label": "Portuguese", "lang": "pt-BR",
+      "respell": "zhah-EEL-sown", "ipa": "ʒaˈiwsõ"},
+     {"label": "How I'm called here", "lang": "en-CA",
+      "respell": "JAY-ill-sun"}]
+  &lt;/script&gt;
+&lt;/say-my-name&gt;</code></pre>
+        </div>
+      </section>
+
+      <section>
+        <h2>Why a recording beats speech synthesis</h2>
+        <p>
+          The examples above use synthesis, because a demo page has no recording of your voice.
+          On your own site, record one. Here is the honest reason why:
+        </p>
+        <ul>
+          <li>
+            <strong>Browsers can't be told how to pronounce a word.</strong> SSML
+            <code>&lt;phoneme&gt;</code> is unsupported across engines, and on macOS the markup
+            gets read aloud as literal text. Your IPA cannot reach the synthesizer.
+          </li>
+          <li>
+            <strong>The voice is whatever the visitor's device has.</strong> Different on
+            Windows, macOS, Android, and iOS — and absent entirely if they have no voice pack
+            for your language.
+          </li>
+          <li>
+            <strong>Synthesis fails hardest on unusual names</strong> — precisely the names that
+            need a pronunciation widget in the first place.
+          </li>
+        </ul>
+        <p>
+          So: synthesis is the fallback, your recording is the answer. When a button will use a
+          synthesized voice, it draws a dashed sound wave and says so in its accessible label,
+          so nobody mistakes a machine guess for you.
+        </p>
+        <p><a class="button" href="./studio/">Record your name in the browser →</a></p>
+      </section>
+
+      <section>
+        <h2>Attributes</h2>
+        <table>
+          <thead>
+            <tr><th>Attribute</th><th>Default</th><th>What it does</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>audio</code></td><td>—</td>
+              <td>URL of your recording. Loaded only when someone presses play.</td>
+            </tr>
+            <tr>
+              <td><code>respell</code></td><td>—</td>
+              <td>Dictionary-style respelling for humans, e.g. <code>zhah-EEL-sown</code>.</td>
+            </tr>
+            <tr>
+              <td><code>ipa</code></td><td>—</td>
+              <td>IPA, with or without slashes. Hidden from screen readers, which read the symbols as gibberish.</td>
+            </tr>
+            <tr>
+              <td><code>lang</code></td><td>—</td>
+              <td>BCP 47 tag. Picks the speech voice; the button hides if no voice matches.</td>
+            </tr>
+            <tr>
+              <td><code>tts</code></td><td><code>fallback</code></td>
+              <td><code>off</code> · <code>fallback</code> (only when there's no recording) · <code>on</code> (both, as separate buttons).</td>
+            </tr>
+            <tr>
+              <td><code>tts-text</code></td><td>the name</td>
+              <td>What the synthesizer is actually given. Set it when the spelled name comes out wrong.</td>
+            </tr>
+            <tr>
+              <td><code>voice</code></td><td>best match</td>
+              <td>Preferred voice name, e.g. <code>Luciana</code>.</td>
+            </tr>
+            <tr>
+              <td><code>rate</code></td><td><code>0.9</code></td>
+              <td>Speech rate. Names land better slightly slower than default.</td>
+            </tr>
+            <tr>
+              <td><code>display</code></td><td><code>inline</code></td>
+              <td><code>none</code> · <code>inline</code> · <code>ruby</code> (above the name) · <code>tooltip</code>.</td>
+            </tr>
+            <tr>
+              <td><code>name</code></td><td>element text</td>
+              <td>Only needed if the element has no text of its own.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Styling</h2>
+        <p>Custom properties, or <code>::part()</code> for full control:</p>
+        <pre><code>say-my-name {
+  --smn-color: #6b46c1;
+  --smn-phonetic-color: #666;
+  --smn-phonetic-size: 0.8em;
+  --smn-button-size: 1em;
+  --smn-focus: 2px solid #6b46c1;
+}
+say-my-name::part(button) { border-radius: 999px; }
+say-my-name::part(ipa) { font-family: 'Doulos SIL', serif; }</code></pre>
+      </section>
+
+      <section>
+        <h2>Accessibility</h2>
+        <ul>
+          <li>A real <code>&lt;button&gt;</code>, reachable by keyboard, with a focus ring that inherits your page's.</li>
+          <li>Labels read as sentences: “Hear how to pronounce Jailson — Portuguese (synthesized voice)”.</li>
+          <li>IPA is <code>aria-hidden</code>; screen readers announce the button label instead of spelling out symbols.</li>
+          <li>The playing animation respects <code>prefers-reduced-motion</code>.</li>
+          <li>Without JavaScript the name is still just text — the component enhances, it doesn't replace.</li>
+          <li>Failures are announced politely rather than silently swallowed.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Frameworks</h2>
+        <p>
+          It's a custom element, so it works anywhere HTML does. React 19+ passes props to
+          custom elements natively. Vue needs
+          <code>compilerOptions.isCustomElement</code>. Svelte and Astro need nothing.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        MIT licensed ·
+        <a href="https://github.com/jailson/say-my-name">github.com/jailson/say-my-name</a>
+      </p>
+    </footer>
+  </body>
+</html>

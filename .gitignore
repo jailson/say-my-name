@@ -1,0 +1,11 @@
+node_modules/
+dist/
+
+# Built copy of the component that the docs site loads — regenerate with `npm run build`.
+docs/vendor/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+.DS_Store

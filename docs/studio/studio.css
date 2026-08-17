@@ -1,0 +1,131 @@
+.field { margin-bottom: 1rem; }
+
+.field label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 550;
+  margin-bottom: 0.3rem;
+}
+
+.field label .hint { font-weight: 400; }
+
+input[type='text'],
+select {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+}
+
+input[type='text']:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.hint { color: var(--muted); font-size: 0.85rem; }
+p.hint { margin: 0.25rem 0 0; }
+
+.warn {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 0.4rem;
+  padding: 0.75rem 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.take {
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.take-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.take-title { margin: 0; color: var(--fg); }
+
+.remove {
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0 1rem;
+}
+
+.recorder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.5rem 0 1rem;
+}
+
+button.button { font: inherit; cursor: pointer; }
+
+.record.recording { background: #c0392b; border-color: #c0392b; color: #fff; }
+
+.wave {
+  width: 100%;
+  height: 72px;
+  display: block;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+}
+
+.trim-row { margin: 0.75rem 0; }
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.checkbox input { margin: 0; }
+
+.downloads {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.downloads .button { font-size: 0.9rem; padding: 0.45rem 0.8rem; }
+
+.preview {
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  padding: 2rem 1.25rem;
+  font-size: 1.6rem;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  --smn-color: var(--accent);
+  --smn-phonetic-color: var(--muted);
+  --smn-respell-size: 0.38em;
+}
+
+#snippet { white-space: pre-wrap; word-break: break-word; }
+
+.cta { align-items: center; }

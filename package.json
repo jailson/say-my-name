@@ -1,0 +1,68 @@
+{
+  "name": "say-my-name",
+  "version": "0.1.0",
+  "description": "A tiny web component that shows people how to pronounce your name: your own recording, a dictionary-style phonetic spelling, and optional speech synthesis.",
+  "keywords": [
+    "pronunciation",
+    "name",
+    "web-component",
+    "custom-element",
+    "accessibility",
+    "a11y",
+    "ipa",
+    "text-to-speech"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jailson/say-my-name.git"
+  },
+  "bugs": "https://github.com/jailson/say-my-name/issues",
+  "homepage": "https://jailson.github.io/say-my-name/",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./element": {
+      "types": "./dist/element.d.ts",
+      "default": "./dist/element.js"
+    },
+    "./say-my-name.js": "./dist/say-my-name.js"
+  },
+  "unpkg": "./dist/say-my-name.js",
+  "jsdelivr": "./dist/say-my-name.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "./dist/index.js",
+    "./dist/say-my-name.js"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "size": "node scripts/size.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:browser": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "dev": "node scripts/build.mjs --watch & node scripts/serve.mjs",
+    "serve": "node scripts/serve.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "esbuild": "^0.24.0",
+    "happy-dom": "^15.11.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

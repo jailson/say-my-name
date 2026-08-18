@@ -38,6 +38,19 @@ worth using:
    still see the name as ordinary text.
 5. **Never imply a synthesized voice is a recording.** Anything that blurs that line is a bug.
 
+## Two licences, one repository
+
+`src/` and the npm package are MIT. `docs/studio/` is GPLv3, because it bundles eSpeak NG.
+
+Keep that boundary intact:
+
+- **No GPL code may reach `src/`.** The component's whole appeal is that it drops into
+  anyone's site without a legal conversation.
+- GPL dependencies belong in `docs/studio/`, staged by the build rather than committed, and
+  loaded lazily so nobody pays for a feature they didn't ask for.
+- `npm run size` guards the first rule from the other direction: the component cannot grow
+  past 5 KB, which rules out bundling an engine into it by accident.
+
 ## Accessibility
 
 Every change to the rendered output needs a pass with a screen reader, or at minimum an

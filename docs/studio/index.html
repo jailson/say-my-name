@@ -88,15 +88,27 @@
           That's a reasonable position — a clean, isolated sample of your voice on a public
           page is exactly what voice-cloning models want, and you don't owe anyone one. A
           synthesized voice you picked deliberately and labelled honestly is a perfectly good
-          answer. Generate a clip elsewhere, then bring it back here with
-          <strong>Use an audio file</strong> and tick
-          <strong>This voice is synthesized</strong>.
+          answer.
+        </p>
+        <p>
+          The quickest route is <strong>Suggest from spelling</strong> above — it runs eSpeak
+          in this tab, fills in the IPA and generates the audio, and ticks
+          <strong>This voice is synthesized</strong> for you. The voice is robotic, but it is
+          derived from real letter-to-sound rules rather than guessed at. If you want a
+          better-sounding one, generate a clip with any of these and bring it back with
+          <strong>Use an audio file</strong>:
         </p>
         <table>
           <thead>
             <tr><th>Tool</th><th>Voice</th><th>Uses your IPA?</th><th>Account?</th></tr>
           </thead>
           <tbody>
+            <tr>
+              <td><strong>Suggest from spelling</strong> (built in)</td>
+              <td>Robotic (eSpeak NG)</td>
+              <td>Derives it for you</td>
+              <td>No — runs in this tab</td>
+            </tr>
             <tr>
               <td><a href="https://itinerarium.github.io/phoneme-synthesis/">phoneme-synthesis</a></td>
               <td>Robotic (eSpeak)</td>
@@ -118,8 +130,9 @@
           </tbody>
         </table>
         <p class="hint">
-          Only the first one lets your IPA actually drive the sound; the rest ignore it, so
-          you tune by ear. Robotic-but-exact often beats smooth-but-wrong for a name.
+          Only the eSpeak-based ones connect your IPA to the sound; the natural-voice tools
+          ignore it, so you tune those by ear. Robotic-but-exact often beats
+          smooth-but-wrong for a name.
         </p>
       </section>
 
@@ -138,7 +151,9 @@
     <footer>
       <p>
         Nothing on this page is uploaded ·
-        <a href="https://github.com/jailson/say-my-name">source</a>
+        <a href="https://github.com/jailson/say-my-name">source</a> ·
+        this page is <a href="./LICENSE">GPLv3</a> because it bundles eSpeak NG; the component
+        itself is MIT
       </p>
     </footer>
 
@@ -175,6 +190,7 @@
             Use an audio file
             <input class="in-file" type="file" accept="audio/*" />
           </label>
+          <button class="suggest button ghost" type="button">Suggest from spelling</button>
           <span class="rec-status hint" role="status" aria-live="polite">No audio yet</span>
         </div>
 
@@ -190,6 +206,13 @@
             This voice is synthesized, not a recording of a person
           </label>
         </div>
+
+        <p class="hint suggest-note">
+          <strong>Suggest from spelling</strong> runs eSpeak locally to guess the IPA and speak
+          it. First use downloads the engine (~9&nbsp;MB); after that it's instant, and nothing
+          you type is sent anywhere. It applies one language's spelling rules, so it gets names
+          of foreign origin wrong often — treat it as a starting point and edit freely.
+        </p>
 
         <div class="downloads">
           <button class="dl-wav button ghost" type="button" disabled>Download .wav (trimmed)</button>

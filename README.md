@@ -89,9 +89,9 @@ want, and declining to publish one is a reasonable position. Generating a clip f
 text-to-speech tool and marking it `synthetic` is a perfectly good outcome — the component
 labels it honestly either way, which is the part that actually matters.
 
-The [studio][studio] does both: record in the browser, or load a file you made elsewhere.
-Nothing is uploaded in either case. It also lists which TTS tools accept IPA (only some do)
-and where to put the resulting file on your site.
+The [studio][studio] does three things: record in the browser, load a file you made
+elsewhere, or press **Suggest from spelling** — which runs eSpeak NG locally to guess the IPA
+and speak it, then ticks `synthetic` for you. Nothing is uploaded in any of the three.
 
 [ssml]: https://github.com/mdn/browser-compat-data/issues/15663
 [studio]: https://jailson.github.io/say-my-name/studio/
@@ -171,6 +171,18 @@ npm run size         # fails if the bundle outgrows its budget
 npm run serve        # then open http://localhost:8080/docs/
 ```
 
-## License
+## Licence
 
-MIT
+**The component is MIT.** Everything in `src/`, and the published npm package, has no
+dependencies and contains no GPL code. Using `<say-my-name>` on your site carries no
+copyleft obligation of any kind.
+
+**The studio in `docs/studio/` is GPLv3**, because it bundles [eSpeak NG][espeak] for the
+"suggest from spelling" feature, and eSpeak NG is GPLv3. The studio is a separate program
+that happens to load the component; that boundary is why the component's licence is
+unaffected. See `docs/studio/LICENSE`.
+
+The engine is not committed here — the build stages it out of `node_modules`, and the studio
+fetches it only when someone presses the button.
+
+[espeak]: https://github.com/espeak-ng/espeak-ng

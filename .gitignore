@@ -4,6 +4,9 @@ dist/
 # Built copy of the component that the docs site loads — regenerate with `npm run build`.
 docs/vendor/
 
+# eSpeak NG, staged from node_modules by the build. GPLv3 and 18 MB: not ours to commit.
+docs/studio/vendor/
+
 # Playwright
 test-results/
 playwright-report/

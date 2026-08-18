@@ -40,3 +40,11 @@ if (watch) {
 // The docs site loads the built bundle directly, so a build refreshes the demo too.
 await mkdir('docs/vendor', { recursive: true });
 await cp('dist/say-my-name.js', 'docs/vendor/say-my-name.js');
+
+// eSpeak NG for the studio's "suggest from spelling" button. Staged rather than committed:
+// it is 18 MB, and it is GPLv3, so it stays out of this MIT repository's history. The studio
+// loads it lazily, only when someone actually presses the button.
+await mkdir('docs/studio/vendor', { recursive: true });
+for (const file of ['espeak-ng.js', 'espeak-ng.wasm']) {
+  await cp(`node_modules/espeak-ng/dist/${file}`, `docs/studio/vendor/${file}`);
+}

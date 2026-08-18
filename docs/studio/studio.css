@@ -150,3 +150,11 @@ button.button { font: inherit; cursor: pointer; }
 #snippet { white-space: pre-wrap; word-break: break-word; }
 
 .cta { align-items: center; }
+
+.suggest-note {
+  border-left: 2px solid var(--line);
+  padding-left: 0.75rem;
+  margin: 0.75rem 0;
+}
+
+button.suggest[disabled] { opacity: 0.5; cursor: progress; }

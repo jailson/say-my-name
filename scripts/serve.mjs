@@ -11,6 +11,8 @@ const TYPES = {
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml',
+  // WebAssembly.instantiateStreaming refuses anything but this exact type.
+  '.wasm': 'application/wasm',
   '.wav': 'audio/wav',
   '.mp3': 'audio/mpeg',
   '.opus': 'audio/ogg',

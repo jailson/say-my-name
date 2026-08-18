@@ -17,10 +17,11 @@
   <body>
     <header class="hero">
       <p class="eyebrow"><a href="../">say-my-name</a> / studio</p>
-      <h1>Record your name</h1>
+      <h1>Record or upload your name</h1>
       <p class="lede">
-        Record, trim, download, paste. Everything happens in this tab — the audio never
-        leaves your device, there is no account, and there is no server to upload to.
+        Record yourself, or bring an audio file you made elsewhere. Trim it, download it,
+        paste the snippet. Everything happens in this tab — the audio never leaves your
+        device, there is no account, and there is no server to upload to.
       </p>
     </header>
 
@@ -46,6 +47,11 @@
         </p>
         <div id="takes"></div>
         <button id="add-take" class="button ghost" type="button">+ Add another pronunciation</button>
+        <p class="hint">
+          Rather not publish your own voice?
+          <a href="#no-recording">Use a synthesized one instead</a> — it's a legitimate choice,
+          and the widget labels it honestly.
+        </p>
       </section>
 
       <section>
@@ -75,6 +81,58 @@
           <code>&lt;script type="module" src="https://cdn.jsdelivr.net/npm/say-my-name@0"&gt;&lt;/script&gt;</code>
         </p>
       </section>
+
+      <section>
+        <h2 id="no-recording">Don't want to record your own voice?</h2>
+        <p>
+          That's a reasonable position — a clean, isolated sample of your voice on a public
+          page is exactly what voice-cloning models want, and you don't owe anyone one. A
+          synthesized voice you picked deliberately and labelled honestly is a perfectly good
+          answer. Generate a clip elsewhere, then bring it back here with
+          <strong>Use an audio file</strong> and tick
+          <strong>This voice is synthesized</strong>.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Voice</th><th>Uses your IPA?</th><th>Account?</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="https://itinerarium.github.io/phoneme-synthesis/">phoneme-synthesis</a></td>
+              <td>Robotic (eSpeak)</td>
+              <td><strong>Yes</strong> — paste IPA directly</td>
+              <td>No — runs in your browser</td>
+            </tr>
+            <tr>
+              <td><a href="https://huggingface.co/spaces/hexgrad/Kokoro-TTS">Kokoro</a> · <a href="https://tts.ai/">TTS.ai</a></td>
+              <td>Natural, open models</td>
+              <td>No — type a respelling until it sounds right</td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <td>Azure Speech Studio · Google Cloud TTS demo</td>
+              <td>Natural</td>
+              <td><strong>Yes</strong> — paste SSML <code>&lt;phoneme&gt;</code></td>
+              <td>Yes, free tier</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="hint">
+          Only the first one lets your IPA actually drive the sound; the rest ignore it, so
+          you tune by ear. Robotic-but-exact often beats smooth-but-wrong for a name.
+        </p>
+      </section>
+
+      <section>
+        <h2>Where the file goes on your site</h2>
+        <p>
+          Download it here, then drop it anywhere your site serves static files —
+          <code>public/</code> or <code>static/</code> in most frameworks, or any folder in a
+          plain HTML site. Point <code>audio</code> at that path. Hosting it on another
+          domain (S3, a CDN) works too: audio elements don't need CORS headers to play.
+        </p>
+      </section>
+
     </main>
 
     <footer>
@@ -113,7 +171,11 @@
         <div class="recorder">
           <button class="record button" type="button">● Record</button>
           <button class="play button ghost" type="button" disabled>▶ Play</button>
-          <span class="rec-status hint" role="status" aria-live="polite">No recording yet</span>
+          <label class="file-label button ghost">
+            Use an audio file
+            <input class="in-file" type="file" accept="audio/*" />
+          </label>
+          <span class="rec-status hint" role="status" aria-live="polite">No audio yet</span>
         </div>
 
         <canvas class="wave" width="640" height="72" aria-hidden="true" hidden></canvas>
@@ -122,6 +184,10 @@
           <label class="checkbox">
             <input class="in-trim" type="checkbox" checked />
             Trim silence from the start and end
+          </label>
+          <label class="checkbox">
+            <input class="in-synthetic" type="checkbox" />
+            This voice is synthesized, not a recording of a person
           </label>
         </div>
 

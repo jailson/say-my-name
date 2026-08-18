@@ -17,6 +17,13 @@ export interface Pronunciation {
   ttsText?: string | undefined;
   /** Preferred voice name, e.g. "Luciana". Falls back to the best match for `lang`. */
   voice?: string | undefined;
+  /**
+   * True when `audio` is a synthesized voice rather than a recording of a person.
+   *
+   * A generated clip is a perfectly good answer — but the widget must never let it pass
+   * for someone's own voice, so this marks the button the same way live synthesis is.
+   */
+  synthetic?: boolean | undefined;
 }
 
 /** How the widget is allowed to use speech synthesis. */

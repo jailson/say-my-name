@@ -98,6 +98,30 @@ test('marks a synthesized voice as synthesized', async ({ page }) => {
   await expect(button).toHaveAttribute('title', 'Synthesized voice — not a recording');
 });
 
+test('labels a supplied audio file as synthesized when it is', async ({ page }) => {
+  // A generated clip is a fine answer, but it must never pass for someone's own voice.
+  const button = widget(page, 'case-synthetic-file').locator('button');
+  await expect(button).toHaveCount(1);
+  await expect(button).toHaveAttribute(
+    'aria-label',
+    'Hear how to pronounce Jailson (synthesized voice)',
+  );
+  await expect(button).toHaveAttribute('data-synth', '');
+  // Still plays the file, not the speech synthesizer.
+  const kind = page.evaluate(
+    () =>
+      new Promise<string>((resolve) => {
+        document.addEventListener(
+          'say-my-name:play',
+          (event) => resolve((event as CustomEvent).detail.kind),
+          { once: true },
+        );
+      }),
+  );
+  await button.click();
+  expect(await kind).toBe('audio');
+});
+
 test('announces a broken recording instead of failing silently', async ({ page }) => {
   await widget(page, 'case-missing-audio').locator('button').click();
   const status = widget(page, 'case-missing-audio').locator('[role="status"]');

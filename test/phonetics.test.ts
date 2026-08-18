@@ -98,6 +98,19 @@ describe('parsePronunciations', () => {
     });
   });
 
+  it('reads the synthetic flag as a boolean attribute', () => {
+    expect(parsePronunciations(el('<x-n audio="/a.wav" synthetic>Jailson</x-n>'))[0]?.synthetic)
+      .toBe(true);
+    expect(
+      parsePronunciations(el('<x-n audio="/a.wav" synthetic="true">Jailson</x-n>'))[0]?.synthetic,
+    ).toBe(true);
+    // An explicit "false" opts out, the way a reader would expect it to.
+    expect(
+      parsePronunciations(el('<x-n audio="/a.wav" synthetic="false">Jailson</x-n>'))[0]?.synthetic,
+    ).toBe(false);
+    expect(parsePronunciations(el('<x-n audio="/a.wav">Jailson</x-n>'))[0]?.synthetic).toBe(false);
+  });
+
   it('reads several pronunciations from the inner JSON block', () => {
     const parsed = parsePronunciations(
       el(`<x-n>Jailson<script type="application/json">

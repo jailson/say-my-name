@@ -94,6 +94,9 @@ export function parsePronunciations(el: Element): Pronunciation[] {
     lang: attr('lang'),
     ttsText: attr('tts-text'),
     voice: attr('voice'),
+    // Presence is enough: `synthetic` and `synthetic="true"` both count, `synthetic="false"`
+    // does not — matching how boolean HTML attributes normally read.
+    synthetic: el.hasAttribute('synthetic') && el.getAttribute('synthetic') !== 'false',
   };
   return [single];
 }

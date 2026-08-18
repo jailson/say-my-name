@@ -85,6 +85,7 @@ button.button { font: inherit; cursor: pointer; }
 
 .record.recording { background: #c0392b; border-color: #c0392b; color: #fff; }
 
+.wave[hidden] { display: none; }
 .wave {
   width: 100%;
   height: 72px;
@@ -94,7 +95,27 @@ button.button { font: inherit; cursor: pointer; }
   border-radius: 0.4rem;
 }
 
-.trim-row { margin: 0.75rem 0; }
+.trim-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0.75rem 0;
+}
+
+/* The file input stays focusable — clipped, not display:none — so the keyboard works. */
+.file-label { display: inline-flex; align-items: center; cursor: pointer; }
+.file-label input[type='file'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.file-label:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .checkbox {
   display: flex;

@@ -126,6 +126,7 @@ export class SayMyNameElement extends HTMLElement {
     'respell',
     'lang',
     'name',
+    'synthetic',
     'tts',
     'tts-text',
     'voice',
@@ -283,7 +284,9 @@ export class SayMyNameElement extends HTMLElement {
   }
 
   #button(control: Control, name: string, showLabel: boolean, describe: boolean): HTMLElement {
-    const synthesized = control.kind === 'tts';
+    // Live synthesis is obviously synthetic; a supplied audio file is only synthetic if the
+    // author says so. Either way the button has to admit it.
+    const synthesized = control.kind === 'tts' || Boolean(control.pron.synthetic);
     const button = document.createElement('button');
     button.type = 'button';
     button.setAttribute('part', synthesized ? 'button button-synth' : 'button');

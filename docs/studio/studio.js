@@ -49,6 +49,7 @@ function fields(take) {
     respell: get('.in-respell'),
     ipa: get('.in-ipa'),
     trim: take.el.querySelector('.in-trim').checked,
+    synthetic: take.el.querySelector('.in-synthetic').checked,
   };
 }
 
@@ -101,6 +102,17 @@ function updateSizes(take) {
     `original ${humanSize(take.blob.size)}`;
 }
 
+/** Extension for the untouched take: the real one if we were handed a file, else by type. */
+function rawExtension(blob) {
+  if (blob.name?.includes('.')) return blob.name.split('.').pop().toLowerCase();
+  const type = blob.type ?? '';
+  if (/mp4|m4a|aac/.test(type)) return 'm4a';
+  if (/mpeg|mp3/.test(type)) return 'mp3';
+  if (/ogg|opus/.test(type)) return 'opus';
+  if (/wav/.test(type)) return 'wav';
+  return 'webm';
+}
+
 function download(blob, filename) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -140,13 +152,7 @@ async function record(take) {
       return;
     }
 
-    status.textContent = 'Recorded';
-    take.el.querySelector('.play').disabled = false;
-    take.el.querySelector('.dl-wav').disabled = false;
-    take.el.querySelector('.dl-raw').disabled = false;
-    drawWave(take);
-    updateSizes(take);
-    refresh();
+    takeReady(take, 'Recorded');
   });
 
   recorder.start();
@@ -162,6 +168,38 @@ async function record(take) {
 
   // A name takes a second; this is a backstop against a forgotten open microphone.
   setTimeout(stop, 15000);
+}
+
+/** Enable everything that only makes sense once a take has audio in it. */
+function takeReady(take, statusText) {
+  take.el.querySelector('.rec-status').textContent = statusText;
+  take.el.querySelector('.play').disabled = false;
+  take.el.querySelector('.dl-wav').disabled = false;
+  take.el.querySelector('.dl-raw').disabled = false;
+  drawWave(take);
+  updateSizes(take);
+  refresh();
+}
+
+/**
+ * Load an audio file the user made elsewhere — a TTS site, a phone memo, anything.
+ *
+ * decodeAudioData runs locally on an ArrayBuffer; the file is never sent anywhere, same
+ * as a recording made here.
+ */
+async function loadFile(take, file) {
+  const status = take.el.querySelector('.rec-status');
+  status.textContent = `Reading ${file.name}…`;
+  try {
+    const buffer = await ctx().decodeAudioData(await file.arrayBuffer());
+    take.blob = file;
+    take.buffer = buffer;
+  } catch {
+    status.textContent = 'Could not decode that file. Try .wav, .mp3, .m4a, .ogg or .opus.';
+    return;
+  }
+  take.el.querySelector('.record').textContent = '● Record instead';
+  takeReady(take, `Loaded ${file.name}`);
 }
 
 function playTake(take) {
@@ -186,6 +224,10 @@ function addTake() {
     if (!el.querySelector('.record').classList.contains('recording')) void record(take);
   });
   el.querySelector('.play').addEventListener('click', () => playTake(take));
+  el.querySelector('.in-file').addEventListener('change', (event) => {
+    const [file] = event.target.files ?? [];
+    if (file) void loadFile(take, file);
+  });
   el.querySelector('.remove').addEventListener('click', () => {
     takes.splice(takes.indexOf(take), 1);
     el.remove();
@@ -201,7 +243,7 @@ function addTake() {
   });
   el.querySelector('.dl-raw').addEventListener('click', () => {
     if (!take.blob) return;
-    const ext = take.blob.type.includes('mp4') ? 'm4a' : 'webm';
+    const ext = rawExtension(take.blob);
     download(take.blob, fileNameFor(take, takes.indexOf(take)).replace(/\.wav$/, `.${ext}`));
   });
 
@@ -228,12 +270,13 @@ function renderPreview() {
   element.append(document.createTextNode(name));
 
   const list = takes.map((take) => {
-    const { label, lang, respell, ipa } = fields(take);
+    const { label, lang, respell, ipa, synthetic } = fields(take);
     const entry = {};
     if (label) entry.label = label;
     if (lang) entry.lang = lang;
     if (respell) entry.respell = respell;
     if (ipa) entry.ipa = ipa;
+    if (synthetic) entry.synthetic = true;
     const samples = samplesFor(take);
     if (samples) {
       const url = URL.createObjectURL(encodeWav(samples, take.buffer.sampleRate));
@@ -264,13 +307,14 @@ function renderSnippet() {
   const display = displaySelect.value;
 
   const entries = takes.map((take, index) => {
-    const { label, lang, respell, ipa } = fields(take);
+    const { label, lang, respell, ipa, synthetic } = fields(take);
     const entry = {};
     if (label) entry.label = label;
     if (lang) entry.lang = lang;
     if (take.buffer) entry.audio = base + fileNameFor(take, index);
     if (respell) entry.respell = respell;
     if (ipa) entry.ipa = ipa;
+    if (synthetic) entry.synthetic = true;
     return entry;
   });
 
@@ -282,6 +326,7 @@ function renderSnippet() {
     for (const key of ['audio', 'respell', 'ipa', 'lang']) {
       if (entry[key]) attrs.push(`${key}="${escapeAttr(entry[key])}"`);
     }
+    if (entry.synthetic) attrs.push('synthetic');
     const open = attrs.length ? `<say-my-name ${attrs.join(' ')}>` : '<say-my-name>';
     snippetEl.textContent = `${open}${name}</say-my-name>`;
     return;
@@ -333,8 +378,8 @@ document.querySelector('#copy').addEventListener('click', async () => {
 if (!navigator.mediaDevices?.getUserMedia) {
   document.querySelector('#takes').insertAdjacentHTML(
     'beforebegin',
-    '<p class="warn">This browser has no microphone access. You can still fill in the ' +
-      'phonetic fields and copy a snippet, then add an audio file yourself.</p>',
+    '<p class="warn">This browser has no microphone access — but you can still use an ' +
+      'audio file, fill in the phonetic fields, and copy the snippet.</p>',
   );
 }
 

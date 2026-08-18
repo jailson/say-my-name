@@ -14,7 +14,7 @@ One tag. No account, no backend, nothing phoning home. About 4.4 KB gzipped, zer
 ```
 
 **[Live demo and docs](https://jailson.github.io/say-my-name/)** ·
-**[Record your name in the browser](https://jailson.github.io/say-my-name/studio/)**
+**[Record or upload your name](https://jailson.github.io/say-my-name/studio/)**
 
 ## Why this exists
 
@@ -82,8 +82,16 @@ something other than the spelling; a synthesized button draws a dashed sound wav
 "(synthesized voice)" in its accessible label; and if the browser has no voice for the
 language, the button is not rendered at all rather than mispronouncing you confidently.
 
-Record yourself instead — the [studio][studio] does it in the browser, no upload, in about a
-minute.
+## A recording is the most faithful answer, not the only respectable one
+
+A clean, isolated sample of your voice on a public page is exactly what voice-cloning models
+want, and declining to publish one is a reasonable position. Generating a clip from a
+text-to-speech tool and marking it `synthetic` is a perfectly good outcome — the component
+labels it honestly either way, which is the part that actually matters.
+
+The [studio][studio] does both: record in the browser, or load a file you made elsewhere.
+Nothing is uploaded in either case. It also lists which TTS tools accept IPA (only some do)
+and where to put the resulting file on your site.
 
 [ssml]: https://github.com/mdn/browser-compat-data/issues/15663
 [studio]: https://jailson.github.io/say-my-name/studio/
@@ -98,6 +106,7 @@ minute.
 | `lang`     | —              | BCP 47 tag. Picks the speech voice; the button hides if none matches. |
 | `tts`      | `fallback`     | `off` · `fallback` (only without a recording) · `on` (both, as separate buttons). |
 | `tts-text` | the name       | What the synthesizer is actually given. |
+| `synthetic`| absent         | Marks an `audio` file as a synthesized voice, so its button is labelled like live synthesis. |
 | `voice`    | best match     | Preferred voice name, e.g. `Luciana`. |
 | `rate`     | `0.9`          | Speech rate. Names land better slightly slower. |
 | `display`  | `inline`       | `none` · `inline` · `ruby` (above the name) · `tooltip`. |

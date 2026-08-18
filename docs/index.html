@@ -34,7 +34,7 @@
         One tag. No account, no backend, nothing phoning home.
       </p>
       <p class="cta">
-        <a class="button" href="./studio/">Record your name →</a>
+        <a class="button" href="./studio/">Record or upload your name →</a>
         <a class="button ghost" href="https://github.com/jailson/say-my-name">
           Source on GitHub
         </a>
@@ -127,10 +127,11 @@
       </section>
 
       <section>
-        <h2>Why a recording beats speech synthesis</h2>
+        <h2>About the voice</h2>
         <p>
-          The examples above use synthesis, because a demo page has no recording of your voice.
-          On your own site, record one. Here is the honest reason why:
+          The examples above use live browser synthesis, because a demo page has no audio of
+          your voice. On your own site you'd supply a file. Three things are worth knowing
+          about relying on the browser instead:
         </p>
         <ul>
           <li>
@@ -149,11 +150,20 @@
           </li>
         </ul>
         <p>
-          So: synthesis is the fallback, your recording is the answer. When a button will use a
-          synthesized voice, it draws a dashed sound wave and says so in its accessible label,
-          so nobody mistakes a machine guess for you.
+          So live synthesis is the weakest of the options, and the component is careful about
+          it: a synthesized button draws a dashed sound wave and says so in its accessible
+          label, and if the browser has no voice for your language it renders no button at all
+          rather than mispronouncing you confidently.
         </p>
-        <p><a class="button" href="./studio/">Record your name in the browser →</a></p>
+        <p>
+          <strong>A recording is the most faithful answer — but it isn't the only respectable
+          one.</strong> A clean, isolated sample of your voice on a public page is exactly what
+          voice-cloning models want, and declining to publish one is reasonable. Generating a
+          clip from a text-to-speech tool, marking it <code>synthetic</code>, and shipping that
+          is a perfectly good outcome. What matters is that a listener is never misled about
+          which one they are hearing.
+        </p>
+        <p><a class="button" href="./studio/">Record or upload your name →</a></p>
       </section>
 
       <section>
@@ -186,6 +196,10 @@
             <tr>
               <td><code>tts-text</code></td><td>the name</td>
               <td>What the synthesizer is actually given. Set it when the spelled name comes out wrong.</td>
+            </tr>
+            <tr>
+              <td><code>synthetic</code></td><td>absent</td>
+              <td>Marks an <code>audio</code> file as a synthesized voice, so its button is labelled like live synthesis.</td>
             </tr>
             <tr>
               <td><code>voice</code></td><td>best match</td>

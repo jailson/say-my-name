@@ -49,6 +49,32 @@ test.describe('studio', () => {
     );
   });
 
+  test('derives the respelling from the IPA as it is typed', async ({ page }) => {
+    await page.goto(STUDIO);
+    const ipa = page.locator('.in-ipa').first();
+    const respell = page.locator('.in-respell').first();
+
+    await ipa.fill('maˈria');
+    await expect(respell).toHaveValue('mah-REE-ah');
+
+    await ipa.fill('ˈdʒon');
+    await expect(respell).toHaveValue('john');
+  });
+
+  test('stops overwriting the respelling once it has been edited by hand', async ({ page }) => {
+    await page.goto(STUDIO);
+    const ipa = page.locator('.in-ipa').first();
+    const respell = page.locator('.in-respell').first();
+
+    await ipa.fill('maˈria');
+    await expect(respell).toHaveValue('mah-REE-ah');
+
+    // A considered choice outranks a generated one, permanently.
+    await respell.fill('muh-REE-uh');
+    await ipa.fill('ʒˌaˈiʊsoŋ');
+    await expect(respell).toHaveValue('muh-REE-uh');
+  });
+
   test('the generated take is playable and downloadable', async ({ page }) => {
     await page.goto(STUDIO);
     await page.locator('.suggest').first().click();

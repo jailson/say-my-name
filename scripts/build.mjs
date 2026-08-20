@@ -22,6 +22,8 @@ const builds = [
   { entryPoints: ['src/index.ts'], outfile: 'dist/index.js' },
   { entryPoints: ['src/element.ts'], outfile: 'dist/element.js' },
   { entryPoints: ['src/index.ts'], outfile: 'dist/say-my-name.js', minify: true },
+  // Used by the studio only, never by the component — so it stays out of the size budget.
+  { entryPoints: ['src/respell.ts'], outfile: 'docs/studio/vendor/respell.js' },
 ];
 
 await rm('dist', { recursive: true, force: true });

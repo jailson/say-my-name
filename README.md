@@ -91,7 +91,11 @@ labels it honestly either way, which is the part that actually matters.
 
 The [studio][studio] does three things: record in the browser, load a file you made
 elsewhere, or press **Suggest from spelling** — which runs eSpeak NG locally to guess the IPA
-and speak it, then ticks `synthetic` for you. Nothing is uploaded in any of the three.
+from the name and language, write a matching respelling, speak it, and tick `synthetic` for
+you. Nothing is uploaded in any of the three.
+
+The respelling keeps tracking the IPA as you edit it — that conversion is a pure string
+function needing no engine — and stops the moment you write one yourself.
 
 [ssml]: https://github.com/mdn/browser-compat-data/issues/15663
 [studio]: https://jailson.github.io/say-my-name/studio/

@@ -1,4 +1,5 @@
 import { ENGINE_MB, engineRequested, suggest } from './espeak.js';
+import { respellFromIpa } from './vendor/respell.js';
 import { encodeWav, envelope, findSpeechBounds, toMono } from './wav.js';
 
 /**
@@ -56,6 +57,21 @@ function fields(take) {
     trim: take.el.querySelector('.in-trim').checked,
     synthetic: take.el.querySelector('.in-synthetic').checked,
   };
+}
+
+/**
+ * Keep the respelling in step with the IPA.
+ *
+ * Runs on every IPA change — typed, pasted or generated — because the conversion is a pure
+ * string function with no engine behind it. Stops the moment the author edits the
+ * respelling themselves: a suggestion should never overwrite a considered choice.
+ */
+function syncRespelling(take) {
+  const respellField = take.el.querySelector('.in-respell');
+  if (respellField.dataset.edited === 'true') return;
+
+  const suggestion = respellFromIpa(take.el.querySelector('.in-ipa').value);
+  if (suggestion) respellField.value = suggestion;
 }
 
 /** The trimmed mono samples for a take, or null if nothing has been recorded yet. */
@@ -232,6 +248,7 @@ async function suggestFor(take) {
   try {
     const { ipa, wav } = await suggest(name, fields(take).lang);
     take.el.querySelector('.in-ipa').value = ipa;
+    syncRespelling(take);
     // Non-negotiable: a generated voice is always marked as one.
     take.el.querySelector('.in-synthetic').checked = true;
     take.blob = wav;
@@ -290,6 +307,15 @@ function addTake() {
     if (!take.blob) return;
     const ext = rawExtension(take.blob);
     download(take.blob, fileNameFor(take, takes.indexOf(take)).replace(/\.wav$/, `.${ext}`));
+  });
+
+  el.querySelector('.in-ipa').addEventListener('input', () => {
+    syncRespelling(take);
+    refresh();
+  });
+  // Typing here hands control to the author for good.
+  el.querySelector('.in-respell').addEventListener('input', (event) => {
+    event.target.dataset.edited = 'true';
   });
 
   for (const input of el.querySelectorAll('input')) {

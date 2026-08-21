@@ -94,8 +94,13 @@ elsewhere, or press **Suggest from spelling** — which runs eSpeak NG locally t
 from the name and language, write a matching respelling, speak it, and tick `synthetic` for
 you. Nothing is uploaded in any of the three.
 
-The respelling keeps tracking the IPA as you edit it — that conversion is a pure string
-function needing no engine — and stops the moment you write one yourself.
+After that first press the engine is in memory, and the IPA and respelling **refill
+automatically** whenever you change the name or the language — a generated voice is re-spoken
+too. The first fill stays behind a button on purpose: typing a name should not trigger a 9 MB
+download nobody asked for.
+
+Every field stops being overwritten the moment you write it yourself, and a recording or an
+uploaded file is never replaced by a regeneration.
 
 [ssml]: https://github.com/mdn/browser-compat-data/issues/15663
 [studio]: https://jailson.github.io/say-my-name/studio/

@@ -158,3 +158,9 @@ button.button { font: inherit; cursor: pointer; }
 }
 
 button.suggest[disabled] { opacity: 0.5; cursor: progress; }
+
+/* Two modes: before the engine exists we advertise the download, after we explain the
+   automatic behaviour it enabled. */
+.after-espeak { display: none; }
+body[data-espeak='ready'] .before-espeak { display: none; }
+body[data-espeak='ready'] .after-espeak { display: block; }

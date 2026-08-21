@@ -1,4 +1,4 @@
-.field { margin-bottom: 1rem; }
+.field { margin-bottom: 0.7rem; }
 
 .field label {
   display: block;
@@ -28,7 +28,10 @@ select:focus-visible {
 }
 
 .hint { color: var(--muted); font-size: 0.85rem; }
+/* Under an input a hint hugs it; standing alone in a section it needs its own space. */
 p.hint { margin: 0.25rem 0 0; }
+section > p.hint { margin: 0.25rem 0 1.1rem; }
+.suggest-note { margin-bottom: 1.1rem; }
 
 .warn {
   border: 1px solid var(--line);
@@ -42,8 +45,8 @@ p.hint { margin: 0.25rem 0 0; }
 .take {
   border: 1px solid var(--line);
   border-radius: 0.6rem;
-  padding: 1.25rem;
-  margin-bottom: 1.25rem;
+  padding: 1rem 1.1rem 0.9rem;
+  margin-bottom: 1rem;
 }
 
 .take-head {
@@ -51,7 +54,7 @@ p.hint { margin: 0.25rem 0 0; }
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .take-title { margin: 0; color: var(--fg); }
@@ -73,12 +76,15 @@ p.hint { margin: 0.25rem 0 0; }
   gap: 0 1rem;
 }
 
+/* Paired fields that belong together — label/language, then IPA/respelling. */
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+
 .recorder {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.6rem;
-  margin: 0.5rem 0 1rem;
+  gap: 0.5rem;
+  margin: 0.15rem 0 0.75rem;
 }
 
 button.button { font: inherit; cursor: pointer; }
@@ -88,7 +94,7 @@ button.button { font: inherit; cursor: pointer; }
 .wave[hidden] { display: none; }
 .wave {
   width: 100%;
-  height: 72px;
+  height: 56px;
   display: block;
   background: var(--code-bg);
   border: 1px solid var(--line);
@@ -98,8 +104,8 @@ button.button { font: inherit; cursor: pointer; }
 .trim-row {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  margin: 0.75rem 0;
+  gap: 0.35rem;
+  margin: 0.6rem 0;
 }
 
 /* The file input stays focusable — clipped, not display:none — so the keyboard works. */

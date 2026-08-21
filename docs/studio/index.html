@@ -32,19 +32,35 @@
           <label for="name">Name as it's written</label>
           <input id="name" type="text" value="Jailson" autocomplete="off" />
         </div>
+      </section>
+
+      <section>
+        <h2>2 · Pronunciations and audio</h2>
+        <p class="hint">
+          Add more than one if your name has a native pronunciation and a local one. Both are
+          correct, and the widget will offer both.
+        </p>
+
         <div class="field">
           <label for="audio-path">Where the audio will live on your site</label>
           <input id="audio-path" type="text" value="/audio/" autocomplete="off" />
           <p class="hint">Used to build the snippet. Upload the files there yourself.</p>
         </div>
-      </section>
 
-      <section>
-        <h2>2 · Pronunciations</h2>
-        <p class="hint">
-          Add more than one if your name has a native pronunciation and a local one. Both are
-          correct, and the widget will offer both.
+        <p class="hint suggest-note before-espeak">
+          <strong>Suggest from spelling</strong> runs eSpeak locally to guess the IPA, write a
+          matching respelling, and speak it. First use downloads the engine (~9&nbsp;MB) — after
+          that, the IPA and respelling refill <em>automatically</em> whenever you change the
+          name or the language. Nothing you type is ever sent anywhere. eSpeak applies one
+          language's spelling rules, so it gets names of foreign origin wrong often: treat
+          everything it writes as a starting point.
         </p>
+        <p class="hint suggest-note after-espeak">
+          <strong>Filling automatically</strong> from the name and language. Change either and
+          the IPA and respelling follow; a generated voice is re-spoken too. Type your own IPA
+          or respelling and that field becomes yours — it stops being overwritten.
+        </p>
+
         <div id="takes"></div>
         <button id="add-take" class="button ghost" type="button">+ Add another pronunciation</button>
         <p class="hint">
@@ -164,7 +180,7 @@
           <button class="remove" type="button" aria-label="Remove this pronunciation">Remove</button>
         </header>
 
-        <div class="grid">
+        <div class="grid two">
           <div class="field">
             <label>Label <span class="hint">shown when there's more than one</span></label>
             <input class="in-label" type="text" placeholder="Portuguese" autocomplete="off" />
@@ -173,24 +189,28 @@
             <label>Language</label>
             <input class="in-lang" type="text" placeholder="pt-BR" autocomplete="off" />
           </div>
+        </div>
+
+        <!-- IPA first: the respelling is derived from it, so it reads left to right. -->
+        <div class="grid two">
           <div class="field">
-            <label>Respelling <span class="hint">derived from the IPA; edit to keep your own</span></label>
-            <input class="in-respell" type="text" placeholder="zhah-EEL-sown" autocomplete="off" />
+            <label>IPA <span class="hint">from the name and language</span></label>
+            <input class="in-ipa" type="text" placeholder="ʒaˈiwsõ" autocomplete="off" />
           </div>
           <div class="field">
-            <label>IPA <span class="hint">optional</span></label>
-            <input class="in-ipa" type="text" placeholder="ʒaˈiwsõ" autocomplete="off" />
+            <label>Respelling <span class="hint">follows the IPA until you edit it</span></label>
+            <input class="in-respell" type="text" placeholder="zhah-EEL-sown" autocomplete="off" />
           </div>
         </div>
 
         <div class="recorder">
+          <button class="suggest button ghost" type="button">Suggest from spelling</button>
           <button class="record button" type="button">● Record</button>
           <button class="play button ghost" type="button" disabled>▶ Play</button>
           <label class="file-label button ghost">
             Use an audio file
             <input class="in-file" type="file" accept="audio/*" />
           </label>
-          <button class="suggest button ghost" type="button">Suggest from spelling</button>
           <span class="rec-status hint" role="status" aria-live="polite">No audio yet</span>
         </div>
 
@@ -206,22 +226,6 @@
             This voice is synthesized, not a recording of a person
           </label>
         </div>
-
-        <p class="hint suggest-note before-espeak">
-          <strong>Suggest from spelling</strong> runs eSpeak locally to guess the IPA, write a
-          matching respelling, and speak it. First use downloads the engine (~9&nbsp;MB) — after
-          that, the IPA and respelling refill <em>automatically</em> whenever you change the
-          name or the language. Nothing you type is ever sent anywhere.
-        </p>
-        <p class="hint suggest-note after-espeak">
-          <strong>Filling automatically</strong> from the name and language. Change either and
-          the IPA and respelling follow; a generated voice is re-spoken too. Type your own IPA
-          or respelling and that field becomes yours — it stops being overwritten.
-        </p>
-        <p class="hint suggest-note">
-          eSpeak applies one language's spelling rules, so it gets names of foreign origin
-          wrong often. Treat everything it writes as a starting point.
-        </p>
 
         <div class="downloads">
           <button class="dl-wav button ghost" type="button" disabled>Download .wav (trimmed)</button>

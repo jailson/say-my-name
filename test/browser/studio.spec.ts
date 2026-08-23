@@ -75,19 +75,14 @@ test.describe('studio', () => {
     await expect(respell).toHaveValue('muh-REE-uh');
   });
 
-  test('typing a name does not pull down the engine on its own', async ({ page }) => {
-    // 9 MB is a choice, not a side effect of typing.
-    const engineRequests: string[] = [];
-    page.on('request', (r) => {
-      if (r.url().includes('/vendor/espeak-ng')) engineRequests.push(r.url());
-    });
-
+  test('fills both fields from the name and language as you type', async ({ page }) => {
+    // No button press: this is the whole point of the studio.
     await page.goto(STUDIO);
-    await page.locator('#name').fill('Beatriz');
     await page.locator('.in-lang').first().fill('pt-BR');
-    await page.waitForTimeout(1200); // longer than the debounce
-    expect(engineRequests).toEqual([]);
-    await expect(page.locator('.in-ipa').first()).toHaveValue('');
+    await page.locator('#name').fill('Beatriz');
+
+    await expect(page.locator('.in-ipa').first()).toHaveValue(/\S/, { timeout: 90_000 });
+    await expect(page.locator('.in-respell').first()).toHaveValue(/\S/);
   });
 
   test('refills automatically once the engine is loaded', async ({ page }) => {

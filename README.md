@@ -94,11 +94,10 @@ elsewhere, or press **Suggest from spelling** — which runs eSpeak NG locally t
 from the name and language, write a matching respelling, speak it, and tick `synthetic` for
 you. Nothing is uploaded in any of the three.
 
-After that first press the engine is in memory, and the IPA and respelling **refill
-automatically** whenever you change the name or the language — a generated voice is re-spoken
-too. The choice is remembered, so on later visits the studio fills in from the first keystroke
-with no button at all. The first fill stays behind a press on purpose: typing a name should
-not trigger a 9 MB download nobody asked for.
+The IPA and respelling **fill in by themselves** from the name and the language, as you
+type — no button. The first derivation of a visit downloads eSpeak (~9 MB) and says so while
+it runs; every one after that is a ~250 ms local call. **Suggest from spelling** additionally
+generates the audio.
 
 The language field autocompletes over all 133 languages eSpeak supports, generated from the
 engine at build time so the list can never drift from what is actually installed.

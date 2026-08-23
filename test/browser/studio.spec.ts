@@ -1,6 +1,33 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const STUDIO = '/docs/studio/';
+
+/**
+ * The studio's editing surface is the rendered widget itself: you click the name, the
+ * respelling or the IPA where they appear. Anything the widget is not currently showing —
+ * an empty field, or a display mode that hides it — gets a dashed chip below the stage
+ * instead. These tests drive both, because that is all a visitor has.
+ */
+async function edit(page: Page, part: 'name' | 'respell' | 'ipa', value: string) {
+  const ghost = page.locator(`.ghost-edit[data-edit="${part}"]`);
+  if (part !== 'name' && (await ghost.isVisible())) {
+    await ghost.click();
+  } else {
+    // Click low in the box: in ruby mode the respelling sits inside the name's own box,
+    // and the centre of it is ambiguous.
+    const box = await page.locator(`#preview [part~="${part}"]`).first().boundingBox();
+    if (!box) throw new Error(`nothing to click for ${part}`);
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height - 6);
+  }
+
+  const LABELS = { name: 'Edit name', respell: 'Edit respelling', ipa: 'Edit IPA' };
+  const editor = page.locator('input.inline-edit');
+  // Guards the click landing on the wrong part — in ruby mode they overlap.
+  await expect(editor).toHaveAttribute('aria-label', LABELS[part]);
+  await editor.fill(value);
+  await editor.press('Enter');
+  await expect(editor).toHaveCount(0);
+}
 
 /**
  * The studio bundles eSpeak NG, which is 18 MB. These tests guard the two properties that
@@ -24,11 +51,9 @@ test.describe('studio', () => {
       .toBeGreaterThan(0);
   });
 
-  test('suggesting from spelling fills the IPA and marks the result synthesized', async ({
-    page,
-  }) => {
+  test('speaking it fills the IPA and marks the result synthesized', async ({ page }) => {
     await page.goto(STUDIO);
-    await page.locator('#name').fill('Jailson');
+    await edit(page, 'name', 'Jailson');
     await page.locator('.in-lang').first().fill('pt-BR');
     await page.locator('.suggest').first().click();
 
@@ -49,37 +74,60 @@ test.describe('studio', () => {
     );
   });
 
+  test('editing the name on the stage changes the widget', async ({ page }) => {
+    await page.goto(STUDIO);
+    await edit(page, 'name', 'Beatriz');
+
+    await expect(page.locator('#preview say-my-name')).toContainText('Beatriz');
+    await expect(page.locator('#snippet')).toContainText('>Beatriz<');
+  });
+
   test('derives the respelling from the IPA as it is typed', async ({ page }) => {
     await page.goto(STUDIO);
-    const ipa = page.locator('.in-ipa').first();
-    const respell = page.locator('.in-respell').first();
+    const respell = page.locator('.in-respell');
 
-    await ipa.fill('maˈria');
+    // Nothing to click yet, so the chip is the way in.
+    await edit(page, 'ipa', 'maˈria');
     await expect(respell).toHaveValue('mah-REE-ah');
+    await expect(page.locator('#preview [part~="respell"]')).toHaveText('mah-REE-ah');
 
-    await ipa.fill('ˈdʒon');
+    // Now it is on the stage, and clicking it there works.
+    await edit(page, 'ipa', 'ˈdʒon');
     await expect(respell).toHaveValue('john');
   });
 
   test('stops overwriting the respelling once it has been edited by hand', async ({ page }) => {
     await page.goto(STUDIO);
-    const ipa = page.locator('.in-ipa').first();
-    const respell = page.locator('.in-respell').first();
+    const respell = page.locator('.in-respell');
 
-    await ipa.fill('maˈria');
+    await edit(page, 'ipa', 'maˈria');
     await expect(respell).toHaveValue('mah-REE-ah');
 
     // A considered choice outranks a generated one, permanently.
-    await respell.fill('muh-REE-uh');
-    await ipa.fill('ʒˌaˈiʊsoŋ');
+    await edit(page, 'respell', 'muh-REE-uh');
+    await edit(page, 'ipa', 'ʒˌaˈiʊsoŋ');
     await expect(respell).toHaveValue('muh-REE-uh');
+  });
+
+  test('keeps both written forms reachable when the widget hides them', async ({ page }) => {
+    await page.goto(STUDIO);
+    await edit(page, 'ipa', 'maˈria');
+
+    // "just the button" renders no phonetics at all — the chips have to take over.
+    await page.locator('.chip[data-display="none"]').click();
+    await expect(page.locator('#preview [part~="ipa"]')).toHaveCount(0);
+    await expect(page.locator('.ghost-edit[data-edit="ipa"]')).toBeVisible();
+    await expect(page.locator('.ghost-edit[data-edit="respell"]')).toBeVisible();
+
+    await edit(page, 'ipa', 'ˈdʒon');
+    await expect(page.locator('.in-ipa')).toHaveValue('ˈdʒon');
   });
 
   test('fills both fields from the name and language as you type', async ({ page }) => {
     // No button press: this is the whole point of the studio.
     await page.goto(STUDIO);
     await page.locator('.in-lang').first().fill('pt-BR');
-    await page.locator('#name').fill('Beatriz');
+    await edit(page, 'name', 'Beatriz');
 
     await expect(page.locator('.in-ipa').first()).toHaveValue(/\S/, { timeout: 90_000 });
     await expect(page.locator('.in-respell').first()).toHaveValue(/\S/);
@@ -106,7 +154,7 @@ test.describe('studio', () => {
       timeout: 60_000,
     });
 
-    await page.locator('.in-ipa').first().fill('ʒaˈiwsõ');
+    await edit(page, 'ipa', 'ʒaˈiwsõ');
     await page.locator('.in-lang').first().fill('pt-BR');
     await page.waitForTimeout(1500);
     await expect(page.locator('.in-ipa').first()).toHaveValue('ʒaˈiwsõ');

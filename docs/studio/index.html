@@ -15,95 +15,84 @@
     <script type="module" src="./studio.js"></script>
   </head>
   <body>
-    <header class="hero">
+    <header class="hero compact">
       <p class="eyebrow"><a href="../">say-my-name</a> / studio</p>
-      <h1>Record or upload your name</h1>
+      <h1>Build your pronunciation</h1>
       <p class="lede">
-        Record yourself, or bring an audio file you made elsewhere. Trim it, download it,
-        paste the snippet. Everything happens in this tab — the audio never leaves your
-        device, there is no account, and there is no server to upload to.
+        Everything below is the real widget. Click any part of it to change it. Nothing you
+        type or record leaves this tab.
       </p>
     </header>
 
     <main>
-      <section>
-        <h2>1 · Your name</h2>
-        <div class="field">
-          <label for="name">Name as it's written</label>
-          <input id="name" type="text" value="Jailson" autocomplete="off" />
+      <!-- The artifact itself, editable in place. -->
+      <section class="stage-section">
+        <div class="stage">
+          <div class="preview" id="preview"></div>
+          <p class="stage-hint" id="stage-hint">
+            Click the <strong>name</strong> to change it. The respelling and the IPA fill
+            in by themselves — click either one to correct it.
+          </p>
+          <!-- Whatever the widget is not currently showing gets a way in from here. -->
+          <div class="stage-edits">
+            <button type="button" class="ghost-edit" data-edit="respell" hidden></button>
+            <button type="button" class="ghost-edit" data-edit="ipa" hidden></button>
+          </div>
         </div>
+
+        <div class="chips" role="group" aria-label="Where the phonetics go">
+          <button type="button" class="chip" data-display="ruby">above the name</button>
+          <button type="button" class="chip" data-display="inline">beside it</button>
+          <button type="button" class="chip" data-display="tooltip">on hover</button>
+          <button type="button" class="chip" data-display="none">just the button</button>
+        </div>
+        <label class="visually-hidden" for="name">Name</label>
+        <input id="name" type="text" value="Jailson" autocomplete="off" hidden />
+        <select id="display" hidden>
+          <option value="inline">inline</option>
+          <option value="ruby" selected>ruby</option>
+          <option value="tooltip">tooltip</option>
+          <option value="none">none</option>
+        </select>
       </section>
 
-      <section>
-        <h2>2 · Pronunciations</h2>
-        <p class="hint">
-          Add more than one if your name has a native pronunciation and a local one. Both are
-          correct, and the widget will offer both.
-        </p>
-
+      <!-- One compact bar per pronunciation, not a form. -->
+      <section class="voices-section">
+        <div id="takes"></div>
+        <button id="add-take" class="button ghost" type="button">
+          + another way to say it
+        </button>
         <p class="hint suggest-note before-espeak">
-          The <strong>IPA and respelling fill in by themselves</strong> from the name and
-          language as you type. The first one downloads eSpeak (~9&nbsp;MB) and says so while
-          it runs; after that it is instant. Nothing you type is ever sent anywhere —
-          eSpeak runs in this tab. <strong>Suggest from spelling</strong> additionally
-          generates the audio.
+          The IPA and respelling fill in by themselves as you type. The first one downloads
+          eSpeak (~9&nbsp;MB) and says so while it runs; after that it is instant.
         </p>
         <p class="hint suggest-note after-espeak">
-          <strong>Filling automatically</strong> from the name and language. Press
-          <strong>Suggest from spelling</strong> to also generate the audio. Type your own IPA
-          or respelling and that field becomes yours — it stops being overwritten.
-        </p>
-
-        <div id="takes"></div>
-        <button id="add-take" class="button ghost" type="button">+ Add another pronunciation</button>
-        <p class="hint">
-          Rather not publish your own voice?
-          <a href="#no-recording">Use a synthesized one instead</a> — it's a legitimate choice,
-          and the widget labels it honestly.
+          Filling automatically from the name and language. Anything you type yourself stops
+          being overwritten.
         </p>
       </section>
 
-      <section>
-        <h2>3 · Where the audio lives</h2>
-        <div class="field">
-          <label for="audio-path">Path on your site</label>
-          <input id="audio-path" type="text" value="/audio/" autocomplete="off" />
-        </div>
-        <p class="hint">
-          Download the files from step 2, then drop them anywhere your site serves static
-          content — <code>public/</code> or <code>static/</code> in most frameworks, or any
-          folder in a plain HTML site. This path is what goes into the snippet. Hosting on
-          another domain (S3, a CDN) works too: audio elements don't need CORS headers to play.
-        </p>
-      </section>
-
-      <section>
-        <h2>4 · Preview</h2>
-        <p class="hint">This is the real component, running on what you just recorded.</p>
-        <div class="preview" id="preview"></div>
-        <div class="field">
-          <label for="display">Display style</label>
-          <select id="display">
-            <option value="inline">inline — phonetics beside the name</option>
-            <option value="ruby" selected>ruby — phonetics above the name</option>
-            <option value="tooltip">tooltip — on hover or focus</option>
-            <option value="none">none — just the button</option>
-          </select>
-        </div>
-      </section>
-
-      <section>
-        <h2>5 · Copy the snippet</h2>
+      <!-- The output, out of the way until wanted. -->
+      <details class="output" open>
+        <summary>Paste this into your site</summary>
         <pre><code id="snippet"></code></pre>
         <p class="cta">
           <button id="copy" class="button" type="button">Copy snippet</button>
           <span id="copy-status" class="hint" role="status" aria-live="polite"></span>
         </p>
+        <div class="field">
+          <label for="audio-path">Audio folder on your site</label>
+          <input id="audio-path" type="text" value="/audio/" autocomplete="off" />
+          <p class="hint">
+            Where you will put the downloaded files. Any static folder works, and another
+            domain works too — audio elements don't need CORS headers.
+          </p>
+        </div>
         <p class="hint">
-          The snippet assumes the component is already on the page:<br />
+          Assumes the component is already on the page:<br />
           <code>&lt;script type="module" src="https://cdn.jsdelivr.net/npm/say-my-name@0"&gt;&lt;/script&gt;</code>
         </p>
-      </section>
+      </details>
 
       <section>
         <h2 id="no-recording">Don't want to record your own voice?</h2>
@@ -114,12 +103,12 @@
           answer.
         </p>
         <p>
-          The quickest route is <strong>Suggest from spelling</strong> above — it runs eSpeak
-          in this tab, fills in the IPA and generates the audio, and ticks
-          <strong>This voice is synthesized</strong> for you. The voice is robotic, but it is
+          The quickest route is <strong>Speak it</strong> above — it runs eSpeak in this tab,
+          fills in the IPA and generates the audio, and ticks
+          <strong>Synthesized voice</strong> for you. The voice is robotic, but it is
           derived from real letter-to-sound rules rather than guessed at. If you want a
           better-sounding one, generate a clip with any of these and bring it back with
-          <strong>Use an audio file</strong>:
+          <strong>File</strong>:
         </p>
         <table>
           <thead>
@@ -127,7 +116,7 @@
           </thead>
           <tbody>
             <tr>
-              <td><strong>Suggest from spelling</strong> (built in)</td>
+              <td><strong>Speak it</strong> (built in)</td>
               <td>Robotic (eSpeak NG)</td>
               <td>Derives it for you</td>
               <td>No — runs in this tab</td>
@@ -174,64 +163,52 @@
 
     <template id="take-template">
       <article class="take">
-        <header class="take-head">
-          <h3 class="take-title">Pronunciation</h3>
-          <button class="remove" type="button" aria-label="Remove this pronunciation">Remove</button>
-        </header>
-
-        <div class="grid two">
-          <div class="field">
-            <label>Label <span class="hint">shown when there's more than one</span></label>
-            <input class="in-label" type="text" placeholder="Portuguese" autocomplete="off" />
-          </div>
-          <div class="field">
-            <label>Language <span class="hint">any of eSpeak's 133</span></label>
-            <input class="in-lang" type="text" list="languages" placeholder="pt-BR"
-                   autocomplete="off" />
-          </div>
-        </div>
-
-        <!-- IPA first: the respelling is derived from it, so it reads left to right. -->
-        <div class="grid two">
-          <div class="field">
-            <label>IPA <span class="hint">from the name and language</span></label>
-            <input class="in-ipa" type="text" placeholder="ʒaˈiwsõ" autocomplete="off" />
-          </div>
-          <div class="field">
-            <label>Respelling <span class="hint">follows the IPA until you edit it</span></label>
-            <input class="in-respell" type="text" placeholder="zhah-EEL-sown" autocomplete="off" />
-          </div>
-        </div>
-
-        <div class="recorder">
-          <button class="suggest button ghost" type="button">Suggest from spelling</button>
+        <div class="take-bar">
+          <button class="pick" type="button" aria-pressed="false">
+            <span class="pick-dot" aria-hidden="true"></span>
+            <span class="pick-label">Pronunciation</span>
+          </button>
+          <input class="in-lang" type="text" list="languages" placeholder="language"
+                 aria-label="Language" autocomplete="off" />
+          <span class="spacer"></span>
+          <button class="suggest button ghost" type="button" title="Generate the audio too">
+            Speak it
+          </button>
           <button class="record button" type="button">● Record</button>
-          <button class="play button ghost" type="button" disabled>▶ Play</button>
-          <label class="file-label button ghost">
-            Use an audio file
+          <button class="play button ghost" type="button" disabled aria-label="Play">▶</button>
+          <label class="file-label button ghost" title="Use an audio file you already have">
+            File
             <input class="in-file" type="file" accept="audio/*" />
           </label>
+          <button class="remove" type="button" aria-label="Remove this pronunciation">×</button>
+        </div>
+
+        <div class="take-detail">
+          <input class="in-label" type="text" placeholder="label, e.g. Portuguese"
+                 aria-label="Label" autocomplete="off" />
           <span class="rec-status hint" role="status" aria-live="polite">No audio yet</span>
         </div>
 
-        <canvas class="wave" width="640" height="72" aria-hidden="true" hidden></canvas>
+        <canvas class="wave" width="640" height="44" aria-hidden="true" hidden></canvas>
 
-        <div class="trim-row">
+        <div class="take-detail">
           <label class="checkbox">
             <input class="in-trim" type="checkbox" checked />
-            Trim silence from the start and end
+            Trim silence
           </label>
           <label class="checkbox">
             <input class="in-synthetic" type="checkbox" />
-            This voice is synthesized, not a recording of a person
+            Synthesized voice
           </label>
-        </div>
-
-        <div class="downloads">
-          <button class="dl-wav button ghost" type="button" disabled>Download .wav (trimmed)</button>
-          <button class="dl-raw button ghost" type="button" disabled>Download original take</button>
+          <span class="spacer"></span>
+          <button class="dl-wav button ghost" type="button" disabled>Download .wav</button>
+          <button class="dl-raw button ghost" type="button" disabled>Original</button>
           <span class="size hint"></span>
         </div>
+
+        <!-- Written forms live on the stage now; kept here so they stay form-controlled. -->
+        <input class="in-ipa" type="text" aria-label="IPA" hidden />
+        <input class="in-respell" type="text" aria-label="Respelling" hidden />
       </article>
     </template>
   </body>

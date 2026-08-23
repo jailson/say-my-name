@@ -26,6 +26,19 @@ const template = document.querySelector('#take-template');
 const takes = [];
 let audioContext = null;
 
+/** The pronunciation the stage edits. Only meaningful when there is more than one. */
+let activeTake = null;
+
+function setActive(take) {
+  activeTake = take;
+  for (const other of takes) {
+    const picked = other === take;
+    other.el.classList.toggle('is-active', picked);
+    other.el.querySelector('.pick').setAttribute('aria-pressed', String(picked));
+  }
+  refresh();
+}
+
 function ctx() {
   audioContext ??= new (window.AudioContext ?? window.webkitAudioContext)();
   return audioContext;
@@ -126,7 +139,7 @@ async function autoDerive(take) {
     }
     take.el.querySelector('.rec-status').textContent = take.blob
       ? take.el.querySelector('.rec-status').textContent
-      : 'Filled from the spelling. Press Suggest to hear it, or record your own.';
+      : 'Filled from the spelling. Press Speak it to hear it, or record your own.';
     refresh();
   } catch (error) {
     console.warn('<say-my-name> studio: could not re-derive.', error);
@@ -354,6 +367,82 @@ async function suggestFor(take) {
   }
 }
 
+/**
+ * Which editable value a click inside the component landed on.
+ *
+ * The component exposes its internals through `part`, and clicks cross the shadow boundary
+ * in composedPath, so the rendered output can be treated as the editing surface without
+ * the studio knowing anything about its internal markup.
+ */
+const EDITABLE_PARTS = {
+  name: { field: null, label: 'name' },
+  respell: { field: '.in-respell', label: 'respelling' },
+  ipa: { field: '.in-ipa', label: 'IPA' },
+};
+
+function editableFrom(event) {
+  for (const node of event.composedPath()) {
+    const part = node?.getAttribute?.('part');
+    if (!part) continue;
+    for (const token of part.split(/\s+/)) {
+      if (EDITABLE_PARTS[token]) return { token, node, ...EDITABLE_PARTS[token] };
+    }
+  }
+  return null;
+}
+
+/**
+ * Put an input exactly where the text sits, matching its size and font.
+ *
+ * This is what makes the page feel like the artifact rather than a form about it: you
+ * click the thing you want to change and type over it.
+ */
+function editInPlace(target) {
+  const { node, field, label } = target;
+  const take = activeTake ?? takes[0];
+  const source = field ? take.el.querySelector(field) : nameInput;
+
+  const rect = node.getBoundingClientRect();
+  const style = getComputedStyle(node);
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'inline-edit';
+  input.value = source.value;
+  input.setAttribute('aria-label', `Edit ${label}`);
+  Object.assign(input.style, {
+    left: `${rect.left + window.scrollX}px`,
+    top: `${rect.top + window.scrollY}px`,
+    height: `${Math.max(rect.height, 24)}px`,
+    minWidth: `${Math.max(rect.width + 24, 90)}px`,
+    font: style.font,
+    letterSpacing: style.letterSpacing,
+  });
+
+  // Enter commits and closes, which then fires blur — so closing has to be idempotent
+  // or the second pass throws on an already-detached node.
+  let closed = false;
+  const close = (keep) => {
+    if (closed) return;
+    closed = true;
+    if (keep && source.value !== input.value) {
+      source.value = input.value;
+      source.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    input.remove();
+  };
+
+  input.addEventListener('blur', () => close(true));
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') close(true);
+    if (event.key === 'Escape') close(false);
+  });
+
+  document.body.append(input);
+  input.focus();
+  input.select();
+}
+
 /** Once the engine is loaded the note about downloading it is just noise. */
 function markAutoMode() {
   document.body.dataset.espeak = 'ready';
@@ -381,6 +470,8 @@ function addTake() {
     if (!el.querySelector('.record').classList.contains('recording')) void record(take);
   });
   el.querySelector('.play').addEventListener('click', () => playTake(take));
+  el.querySelector('.pick').addEventListener('click', () => setActive(take));
+  el.addEventListener('focusin', () => setActive(take));
   el.querySelector('.suggest').addEventListener('click', () => void suggestFor(take));
   el.querySelector('.in-file').addEventListener('change', (event) => {
     const [file] = event.target.files ?? [];
@@ -469,6 +560,27 @@ function renderPreview() {
   }
 
   previewEl.append(element);
+  syncGhostEdits(element);
+}
+
+/**
+ * Show a way in for anything the widget is not currently displaying.
+ *
+ * The stage is the editing surface, which only works for what is on it: an empty IPA has
+ * nothing to click, and `display="none"` hides both written forms by design. Rather than
+ * put the fields back on the page permanently, they appear only while they are unreachable.
+ */
+function syncGhostEdits(element) {
+  const take = activeTake ?? takes[0];
+  for (const button of document.querySelectorAll('.ghost-edit')) {
+    const { field, label } = EDITABLE_PARTS[button.dataset.edit];
+    const value = take ? take.el.querySelector(field).value.trim() : '';
+    const onStage = Boolean(
+      element.shadowRoot?.querySelector(`[part~="${button.dataset.edit}"]`),
+    );
+    button.hidden = Boolean(value) && onStage;
+    button.textContent = value ? `${label}: ${value}` : `+ add ${label}`;
+  }
 }
 
 /** The snippet the user pastes into their own site. */
@@ -522,8 +634,9 @@ function escapeAttr(value) {
 
 function refresh() {
   for (const [index, take] of takes.entries()) {
-    take.el.querySelector('.take-title').textContent =
-      takes.length > 1 ? `Pronunciation ${index + 1}` : 'Pronunciation';
+    const named = fields(take).label;
+    take.el.querySelector('.pick-label').textContent =
+      named || (takes.length > 1 ? `Pronunciation ${index + 1}` : 'Pronunciation');
     take.el.querySelector('.remove').hidden = takes.length < 2;
   }
   renderPreview();
@@ -572,16 +685,48 @@ function fillLanguageList() {
 }
 
 fillLanguageList();
+
+// The rendered component is the editing surface.
+previewEl.addEventListener('click', (event) => {
+  const target = editableFrom(event);
+  // Let the play button be a play button.
+  if (!target || event.composedPath().some((n) => n?.tagName === 'BUTTON')) return;
+  event.preventDefault();
+  editInPlace(target);
+});
+
+for (const button of document.querySelectorAll('.ghost-edit')) {
+  button.addEventListener('click', () => {
+    editInPlace({ node: button, ...EDITABLE_PARTS[button.dataset.edit] });
+  });
+}
+
+// Display style as something you click and immediately see.
+for (const chip of document.querySelectorAll('.chip')) {
+  chip.addEventListener('click', () => {
+    displaySelect.value = chip.dataset.display;
+    displaySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    syncChips();
+  });
+}
+
+function syncChips() {
+  for (const chip of document.querySelectorAll('.chip')) {
+    chip.setAttribute('aria-pressed', String(chip.dataset.display === displaySelect.value));
+    chip.classList.toggle('is-on', chip.dataset.display === displaySelect.value);
+  }
+}
+syncChips();
+
 addTake();
 
-// Returning visitor who already accepted the download: no button press needed, the fields
-// fill from the first keystroke.
-// A returning visitor has the engine cached, so warm it immediately; a first-time visitor
-// gets it on their first keystroke instead.
+// A returning visitor already accepted the download and has it cached, so warm the engine
+// and fill the example straight away — for them it costs nothing.
+//
+// A first-time visitor gets neither: 9 MB on page load, before they have asked for
+// anything, is an ambush. Their first keystroke starts it, with the status line saying so.
 if (hasOptedIn()) {
   markAutoMode();
   void preloadEngine();
+  for (const take of takes) scheduleAutoDerive(take);
 }
-
-// The name field starts populated, so fill straight away rather than waiting for an edit.
-for (const take of takes) scheduleAutoDerive(take);

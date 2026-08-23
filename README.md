@@ -89,14 +89,16 @@ want, and declining to publish one is a reasonable position. Generating a clip f
 text-to-speech tool and marking it `synthetic` is a perfectly good outcome — the component
 labels it honestly either way, which is the part that actually matters.
 
-The [studio][studio] does three things: record in the browser, load a file you made
-elsewhere, or press **Suggest from spelling** — which runs eSpeak NG locally to guess the IPA
-from the name and language, write a matching respelling, speak it, and tick `synthetic` for
-you. Nothing is uploaded in any of the three.
+The [studio][studio] shows the real component at the top of the page and lets you edit it by
+clicking it — the name, the respelling and the IPA are all editable where they appear. For the
+audio it does three things: record in the browser, load a file you made elsewhere, or press
+**Speak it** — which runs eSpeak NG locally to guess the IPA from the name and language, write
+a matching respelling, speak it, and tick `synthetic` for you. Nothing is uploaded in any of
+the three.
 
 The IPA and respelling **fill in by themselves** from the name and the language, as you
 type — no button. The first derivation of a visit downloads eSpeak (~9 MB) and says so while
-it runs; every one after that is a ~250 ms local call. **Suggest from spelling** additionally
+it runs; every one after that is a ~250 ms local call. **Speak it** additionally
 generates the audio.
 
 The language field autocompletes over all 133 languages eSpeak supports, generated from the

@@ -407,7 +407,7 @@ export class SayMyNameElement extends HTMLElement {
     const respell = pron.respell?.trim() ?? '';
     const ipa = pron.ipa?.trim() ? formatIpa(pron.ipa) : '';
     this.#phonetics.replaceChildren();
-    if (respell) this.#phonetics.append(document.createTextNode(respell));
+    if (respell) this.#phonetics.append(respellNode(respell));
     if (respell && ipa) this.#phonetics.append(document.createTextNode(' · '));
     if (ipa) this.#phonetics.append(ipaNode(ipa));
   }
@@ -415,6 +415,17 @@ export class SayMyNameElement extends HTMLElement {
   #announce(message: string): void {
     if (this.#status) this.#status.textContent = message;
   }
+}
+
+/**
+ * The respelling gets its own element in every display mode, not just ruby, so that
+ * `::part(respell)` means the same thing everywhere — and so a page can find it.
+ */
+function respellNode(text: string): HTMLElement {
+  const span = document.createElement('span');
+  span.setAttribute('part', 'respell');
+  span.textContent = text;
+  return span;
 }
 
 /**

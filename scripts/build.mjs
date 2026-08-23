@@ -1,6 +1,7 @@
 import { build, context } from 'esbuild';
 import { rm, mkdir, cp } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
+import { writeVoices } from './voices.mjs';
 
 const watch = process.argv.includes('--watch');
 
@@ -50,3 +51,8 @@ await mkdir('docs/studio/vendor', { recursive: true });
 for (const file of ['espeak-ng.js', 'espeak-ng.wasm']) {
   await cp(`node_modules/espeak-ng/dist/${file}`, `docs/studio/vendor/${file}`);
 }
+
+// The language list the studio offers, taken from the engine that just got staged so the
+// two can never disagree.
+const voiceCount = await writeVoices();
+console.log(`\n  docs/studio/vendor/voices.js  ${voiceCount} languages\n`);

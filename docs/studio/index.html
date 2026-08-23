@@ -35,17 +35,11 @@
       </section>
 
       <section>
-        <h2>2 · Pronunciations and audio</h2>
+        <h2>2 · Pronunciations</h2>
         <p class="hint">
           Add more than one if your name has a native pronunciation and a local one. Both are
           correct, and the widget will offer both.
         </p>
-
-        <div class="field">
-          <label for="audio-path">Where the audio will live on your site</label>
-          <input id="audio-path" type="text" value="/audio/" autocomplete="off" />
-          <p class="hint">Used to build the snippet. Upload the files there yourself.</p>
-        </div>
 
         <p class="hint suggest-note before-espeak">
           <strong>Suggest from spelling</strong> runs eSpeak locally to guess the IPA, write a
@@ -71,7 +65,21 @@
       </section>
 
       <section>
-        <h2>3 · Preview</h2>
+        <h2>3 · Where the audio lives</h2>
+        <div class="field">
+          <label for="audio-path">Path on your site</label>
+          <input id="audio-path" type="text" value="/audio/" autocomplete="off" />
+        </div>
+        <p class="hint">
+          Download the files from step 2, then drop them anywhere your site serves static
+          content — <code>public/</code> or <code>static/</code> in most frameworks, or any
+          folder in a plain HTML site. This path is what goes into the snippet. Hosting on
+          another domain (S3, a CDN) works too: audio elements don't need CORS headers to play.
+        </p>
+      </section>
+
+      <section>
+        <h2>4 · Preview</h2>
         <p class="hint">This is the real component, running on what you just recorded.</p>
         <div class="preview" id="preview"></div>
         <div class="field">
@@ -86,7 +94,7 @@
       </section>
 
       <section>
-        <h2>4 · Copy the snippet</h2>
+        <h2>5 · Copy the snippet</h2>
         <pre><code id="snippet"></code></pre>
         <p class="cta">
           <button id="copy" class="button" type="button">Copy snippet</button>
@@ -152,16 +160,6 @@
         </p>
       </section>
 
-      <section>
-        <h2>Where the file goes on your site</h2>
-        <p>
-          Download it here, then drop it anywhere your site serves static files —
-          <code>public/</code> or <code>static/</code> in most frameworks, or any folder in a
-          plain HTML site. Point <code>audio</code> at that path. Hosting it on another
-          domain (S3, a CDN) works too: audio elements don't need CORS headers to play.
-        </p>
-      </section>
-
     </main>
 
     <footer>
@@ -172,6 +170,8 @@
         itself is MIT
       </p>
     </footer>
+
+    <datalist id="languages"></datalist>
 
     <template id="take-template">
       <article class="take">
@@ -186,8 +186,9 @@
             <input class="in-label" type="text" placeholder="Portuguese" autocomplete="off" />
           </div>
           <div class="field">
-            <label>Language</label>
-            <input class="in-lang" type="text" placeholder="pt-BR" autocomplete="off" />
+            <label>Language <span class="hint">any of eSpeak's 133</span></label>
+            <input class="in-lang" type="text" list="languages" placeholder="pt-BR"
+                   autocomplete="off" />
           </div>
         </div>
 

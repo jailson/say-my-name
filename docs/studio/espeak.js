@@ -28,6 +28,17 @@ export function engineRequested() {
   return enginePromise !== null;
 }
 
+/**
+ * Start fetching the engine without generating anything.
+ *
+ * Used on return visits by someone who already opted in once: for them the download is
+ * already in the browser cache, so the studio can be fully automatic from the first
+ * keystroke without ambushing anyone who has not asked for it.
+ */
+export async function preloadEngine() {
+  await engine();
+}
+
 /** eSpeak wants `pt-br`, not `pt-BR`. An empty tag falls back to English. */
 export function espeakVoice(lang) {
   return (lang ?? '').trim().toLowerCase() || 'en-us';

@@ -96,8 +96,12 @@ you. Nothing is uploaded in any of the three.
 
 After that first press the engine is in memory, and the IPA and respelling **refill
 automatically** whenever you change the name or the language — a generated voice is re-spoken
-too. The first fill stays behind a button on purpose: typing a name should not trigger a 9 MB
-download nobody asked for.
+too. The choice is remembered, so on later visits the studio fills in from the first keystroke
+with no button at all. The first fill stays behind a press on purpose: typing a name should
+not trigger a 9 MB download nobody asked for.
+
+The language field autocompletes over all 133 languages eSpeak supports, generated from the
+engine at build time so the list can never drift from what is actually installed.
 
 Every field stops being overwritten the moment you write it yourself, and a recording or an
 uploaded file is never replaced by a regeneration.

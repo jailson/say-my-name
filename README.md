@@ -6,7 +6,7 @@ dictionary-style phonetic spelling, and speech synthesis when there is no record
 One tag. No account, no backend, nothing phoning home. About 4.4 KB gzipped, zero dependencies.
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/npm/say-my-name@0"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@jailson/say-my-name@0"></script>
 
 <say-my-name audio="/audio/my-name.opus" respell="zhah-EEL-sown" ipa="ʒaˈiwsõ" lang="pt-BR">
   Jailson
@@ -31,14 +31,18 @@ This is the version that just works on a static site, hosts nothing, and asks fo
 ## Install
 
 ```sh
-npm install say-my-name
+npm install @jailson/say-my-name
 ```
 
 ```js
-import 'say-my-name'; // registers <say-my-name>
+import '@jailson/say-my-name'; // registers <say-my-name>
 ```
 
 Or use the CDN snippet above — no build step, no bundler.
+
+The package is scoped because npm rejects the unscoped `say-my-name` as too close to an
+existing `saymyname`. The element is still `<say-my-name>`; only the install line and the
+CDN URL carry the scope.
 
 ## A name can have more than one right answer
 
@@ -183,7 +187,7 @@ elements natively. Vue needs `compilerOptions.isCustomElement`. Svelte and Astro
 To avoid a tag-name collision, register it yourself:
 
 ```js
-import { defineSayMyName } from 'say-my-name/element';
+import { defineSayMyName } from '@jailson/say-my-name/element';
 defineSayMyName('my-name');
 ```
 

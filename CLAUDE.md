@@ -36,5 +36,7 @@ npm run serve        # http://localhost:8080/docs/
 
 ## Naming
 
-The package and custom element are `say-my-name`. The repository is expected to be renamed
-to `say-my-name` to match; docs, `package.json`, and CI already assume that name.
+The custom element and the repository are `say-my-name`. The npm package is
+`@jailson/say-my-name`: npm refuses the unscoped name as too similar to the existing
+`saymyname`, and a scope is the only way to keep the name everywhere else. Nothing but the
+install line and the CDN URL carries the scope.

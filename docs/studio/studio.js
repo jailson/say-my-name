@@ -397,6 +397,13 @@ function editableFrom(event) {
  * This is what makes the page feel like the artifact rather than a form about it: you
  * click the thing you want to change and type over it.
  */
+/** Breathing room between the editor and the window edge. */
+const EDGE_PAD = 8;
+
+function clamp(value, low, high) {
+  return Math.min(Math.max(value, low), Math.max(low, high));
+}
+
 function editInPlace(target) {
   const { node, field, label } = target;
   const take = activeTake ?? takes[0];
@@ -405,16 +412,24 @@ function editInPlace(target) {
   const rect = node.getBoundingClientRect();
   const style = getComputedStyle(node);
 
+  // The editor is absolutely positioned on the body, so its width has to be stated and
+  // kept inside the viewport. Left to a percentage — which the page's own input rule
+  // would otherwise give it — a full-width box anchored at the name's left edge widens
+  // the document and shunts the whole layout sideways.
+  const page = document.documentElement.clientWidth;
+  const width = Math.min(Math.max(rect.width + 24, 90), page - 2 * EDGE_PAD);
+  const left = clamp(rect.left, EDGE_PAD, page - width - EDGE_PAD);
+
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'inline-edit';
   input.value = source.value;
   input.setAttribute('aria-label', `Edit ${label}`);
   Object.assign(input.style, {
-    left: `${rect.left + window.scrollX}px`,
+    left: `${left + window.scrollX}px`,
     top: `${rect.top + window.scrollY}px`,
     height: `${Math.max(rect.height, 24)}px`,
-    minWidth: `${Math.max(rect.width + 24, 90)}px`,
+    width: `${width}px`,
     font: style.font,
     letterSpacing: style.letterSpacing,
   });

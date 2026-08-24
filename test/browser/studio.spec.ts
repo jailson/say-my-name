@@ -29,6 +29,16 @@ async function edit(page: Page, part: 'name' | 'respell' | 'ipa', value: string)
   await expect(editor).toHaveCount(0);
 }
 
+/** Geometry the page must hold to while an editor is open. */
+async function layout(page: Page) {
+  return page.evaluate(() => ({
+    overflowing:
+      document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    stageLeft: Math.round(document.querySelector('.stage')!.getBoundingClientRect().left),
+    scrollX: Math.round(window.scrollX),
+  }));
+}
+
 /**
  * The studio bundles eSpeak NG, which is 18 MB. These tests guard the two properties that
  * matter and are easy to break silently: that it is never fetched unless asked for, and
@@ -72,6 +82,37 @@ test.describe('studio', () => {
       'aria-label',
       /synthesized voice/,
     );
+  });
+
+  test('opening an editor does not disturb the page around it', async ({ page }) => {
+    // The editor is an absolutely positioned text input on the body, which makes it an
+    // easy thing to break: inheriting a percentage width, or being anchored past the
+    // right edge, widens the document and slides the whole layout sideways.
+    await page.goto(STUDIO);
+    await edit(page, 'ipa', 'maˈria');
+    const before = await layout(page);
+    expect(before.overflowing).toBe(false);
+
+    for (const part of ['name', 'respell', 'ipa'] as const) {
+      const box = await page.locator(`#preview [part~="${part}"]`).first().boundingBox();
+      if (!box) throw new Error(`nothing to click for ${part}`);
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height - 6);
+      await expect(page.locator('input.inline-edit')).toBeVisible();
+
+      const during = await layout(page);
+      expect(during, `layout moved while editing the ${part}`).toEqual(before);
+
+      // ...and the editor itself has to stay on screen to be usable.
+      const editor = await page.locator('input.inline-edit').boundingBox();
+      const width = page.viewportSize()!.width;
+      expect(editor!.x).toBeGreaterThanOrEqual(0);
+      expect(editor!.x + editor!.width).toBeLessThanOrEqual(width);
+
+      await page.locator('input.inline-edit').press('Escape');
+      await expect(page.locator('input.inline-edit')).toHaveCount(0);
+    }
+
+    expect(await layout(page)).toEqual(before);
   });
 
   test('editing the name on the stage changes the widget', async ({ page }) => {

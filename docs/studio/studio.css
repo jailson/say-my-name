@@ -246,10 +246,15 @@ body[data-espeak='ready'] .after-espeak { display: block; }
 
 .ghost-edit[hidden] { display: none; }
 
-/* The input that appears over whatever was clicked. */
-.inline-edit {
+/* The input that appears over whatever was clicked.
+   Typed as input[type=text], so it has to beat that rule's width: 100% — a percentage
+   width on a body-anchored absolute box widens the document and scrolls the page. */
+input.inline-edit {
   position: absolute;
   z-index: 20;
+  box-sizing: border-box;
+  width: auto;
+  max-width: calc(100vw - 1rem);
   padding: 0 0.15em;
   border: 0;
   border-bottom: 2px solid var(--accent);

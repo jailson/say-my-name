@@ -47,6 +47,7 @@
   ],
   "scripts": {
     "build": "node scripts/build.mjs",
+    "prepublishOnly": "npm run build && npm run size",
     "size": "node scripts/size.mjs",
     "test": "vitest run",
     "test:watch": "vitest",

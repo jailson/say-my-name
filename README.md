@@ -61,7 +61,12 @@ you pick one.
 ```
 
 You get one labelled button per pronunciation, and the written form follows whichever one is
-playing. The JSON lives in a `<script type="application/json">` block, which browsers never
+playing.
+
+In `display="ruby"` the two written forms frame the name the way a dictionary entry does —
+respelling above, IPA below — and `show` drops either one: `show="respell"` for the reading
+aid without the notation, `show="ipa"` for the notation without a spelling that only helps
+English speakers. The JSON lives in a `<script type="application/json">` block, which browsers never
 render — so if this component fails to load, the visitor still just sees your name.
 
 ## Speech synthesis is the fallback, not the answer
@@ -101,8 +106,9 @@ type — no button. The first derivation of a visit downloads eSpeak (~9 MB) and
 it runs; every one after that is a ~250 ms local call. **Speak it** additionally
 generates the audio.
 
-The language field autocompletes over all 133 languages eSpeak supports, generated from the
-engine at build time so the list can never drift from what is actually installed.
+The language field starts on `pt-BR` and autocompletes over all 133 languages eSpeak
+supports, generated from the engine at build time so the list can never drift from what is
+actually installed.
 
 Every field stops being overwritten the moment you write it yourself, and a recording or an
 uploaded file is never replaced by a regeneration.
@@ -123,7 +129,8 @@ uploaded file is never replaced by a regeneration.
 | `synthetic`| absent         | Marks an `audio` file as a synthesized voice, so its button is labelled like live synthesis. |
 | `voice`    | best match     | Preferred voice name, e.g. `Luciana`. |
 | `rate`     | `0.9`          | Speech rate. Names land better slightly slower. |
-| `display`  | `inline`       | `none` · `inline` · `ruby` (above the name) · `tooltip`. |
+| `display`  | `inline`       | `none` · `inline` · `ruby` (respelling above the name, IPA below) · `tooltip`. |
+| `show`     | `both`         | `both` · `respell` · `ipa` — which written forms appear at all. |
 | `name`     | element text   | Only needed when the element has no text of its own. |
 
 The element fires a `say-my-name:play` event (bubbles, composed) with

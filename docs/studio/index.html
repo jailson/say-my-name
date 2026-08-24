@@ -40,11 +40,20 @@
           </div>
         </div>
 
-        <div class="chips" role="group" aria-label="Where the phonetics go">
-          <button type="button" class="chip" data-display="ruby">above the name</button>
-          <button type="button" class="chip" data-display="inline">beside it</button>
-          <button type="button" class="chip" data-display="tooltip">on hover</button>
-          <button type="button" class="chip" data-display="none">just the button</button>
+        <div class="chip-rows">
+          <div class="chips" role="group" aria-label="Where the phonetics go">
+            <span class="chips-label">Where</span>
+            <button type="button" class="chip" data-display="ruby">above and below</button>
+            <button type="button" class="chip" data-display="inline">beside the name</button>
+            <button type="button" class="chip" data-display="tooltip">on hover</button>
+            <button type="button" class="chip" data-display="none">nowhere</button>
+          </div>
+          <div class="chips" role="group" aria-label="Which written forms to show">
+            <span class="chips-label">What</span>
+            <button type="button" class="chip" data-show="both">both</button>
+            <button type="button" class="chip" data-show="respell">respelling only</button>
+            <button type="button" class="chip" data-show="ipa">IPA only</button>
+          </div>
         </div>
         <label class="visually-hidden" for="name">Name</label>
         <input id="name" type="text" value="Jailson" autocomplete="off" hidden />
@@ -53,6 +62,11 @@
           <option value="ruby" selected>ruby</option>
           <option value="tooltip">tooltip</option>
           <option value="none">none</option>
+        </select>
+        <select id="show" hidden>
+          <option value="both" selected>both</option>
+          <option value="respell">respelling</option>
+          <option value="ipa">ipa</option>
         </select>
       </section>
 
@@ -169,7 +183,7 @@
             <span class="pick-label">Pronunciation</span>
           </button>
           <input class="in-lang" type="text" list="languages" placeholder="language"
-                 aria-label="Language" autocomplete="off" />
+                 aria-label="Language" autocomplete="off" value="pt-BR" />
           <span class="spacer"></span>
           <button class="suggest button ghost" type="button" title="Generate the audio too">
             Speak it

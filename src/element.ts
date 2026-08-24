@@ -9,7 +9,7 @@ import {
   writtenForm,
 } from './phonetics.js';
 import { canSpeak, cancelSpeech, primeVoices, speak } from './tts.js';
-import type { DisplayMode, Pronunciation, TtsPolicy } from './types.js';
+import type { DisplayMode, Pronunciation, TtsPolicy, WrittenForms } from './types.js';
 
 const STYLES = /* css */ `
 :host {
@@ -25,6 +25,15 @@ const STYLES = /* css */ `
    selectable, copyable, and readable if this script never loads. */
 .name { font: inherit; }
 ruby { ruby-position: over; }
+
+/* Ruby mode reads as a dictionary entry: respelling over the name, IPA under it. The
+   name and its buttons stay on one line, so only the written forms stack. */
+:host([display='ruby' i]) { flex-direction: column; align-items: center; gap: 0.15em; }
+.row {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--smn-gap, 0.4em);
+}
 rt {
   font-size: var(--smn-respell-size, 0.5em);
   font-weight: 400;
@@ -132,6 +141,7 @@ export class SayMyNameElement extends HTMLElement {
     'voice',
     'rate',
     'display',
+    'show',
   ];
 
   #root: ShadowRoot;
@@ -185,6 +195,17 @@ export class SayMyNameElement extends HTMLElement {
     return this.#prons.some(hasWrittenForm) ? 'inline' : 'none';
   }
 
+  /**
+   * Which written forms to render: both, the respelling alone, or the IPA alone.
+   *
+   * Some people want the reading aid without the notation; some want the notation
+   * without a spelling that only works for English speakers. Both are reasonable.
+   */
+  get #shown(): WrittenForms {
+    const raw = this.getAttribute('show')?.trim().toLowerCase();
+    return raw === 'respell' || raw === 'ipa' ? raw : 'both';
+  }
+
   get #rate(): number | undefined {
     const raw = Number(this.getAttribute('rate'));
     return Number.isFinite(raw) && raw > 0 ? raw : undefined;
@@ -221,6 +242,7 @@ export class SayMyNameElement extends HTMLElement {
 
     const name = this.name;
     const display = this.#displayMode;
+    const shown = this.#shown;
     const controls = this.#controls();
 
     this.#root.replaceChildren();
@@ -229,9 +251,19 @@ export class SayMyNameElement extends HTMLElement {
     style.textContent = STYLES;
     this.#root.append(style);
 
+    // Ruby mode stacks, so the name and its buttons need a line of their own for the
+    // phonetics to sit under. Every other mode is a single row already.
+    let row: HTMLElement | null = null;
+    if (display === 'ruby') {
+      row = document.createElement('span');
+      row.className = 'row';
+      this.#root.append(row);
+    }
+    const line = row ?? this.#root;
+
     // The name itself is always a <slot>: one copy of the text, living in the light DOM.
     const slot = document.createElement('slot');
-    if (display === 'ruby' && this.#prons[this.#active]?.respell?.trim()) {
+    if (display === 'ruby' && shown !== 'ipa' && this.#prons[this.#active]?.respell?.trim()) {
       const ruby = document.createElement('ruby');
       ruby.setAttribute('part', 'name');
       ruby.className = 'name';
@@ -240,14 +272,14 @@ export class SayMyNameElement extends HTMLElement {
       // Filled by #paintPhonetics, which also keeps it in step with the active variant.
       this.#respellNode = rt;
       ruby.append(slot, rt);
-      this.#root.append(ruby);
+      line.append(ruby);
     } else {
       this.#respellNode = null;
       const wrap = document.createElement('span');
       wrap.setAttribute('part', 'name');
       wrap.className = 'name';
       wrap.append(slot);
-      this.#root.append(wrap);
+      line.append(wrap);
     }
 
     // In ruby mode the respelling already sits above the name, but IPA still needs a home,
@@ -270,7 +302,7 @@ export class SayMyNameElement extends HTMLElement {
       for (const control of controls) {
         bar.append(this.#button(control, name, controls.length > 1, display === 'tooltip'));
       }
-      this.#root.append(bar);
+      line.append(bar);
     }
 
     const status = document.createElement('span');
@@ -396,17 +428,19 @@ export class SayMyNameElement extends HTMLElement {
       return;
     }
 
+    const shown = this.#shown;
+    const respell = shown === 'ipa' ? '' : (pron.respell?.trim() ?? '');
+    const ipa = shown !== 'respell' && pron.ipa?.trim() ? formatIpa(pron.ipa) : '';
+
+    this.#phonetics.replaceChildren();
+
+    // Ruby mode has already put the respelling above the name, so the line below is
+    // the IPA alone.
     if (this.#displayMode === 'ruby') {
-      // The respelling is already above the name; only IPA remains.
-      const ipa = pron.ipa?.trim() ? formatIpa(pron.ipa) : '';
-      this.#phonetics.replaceChildren();
       if (ipa) this.#phonetics.append(ipaNode(ipa));
       return;
     }
 
-    const respell = pron.respell?.trim() ?? '';
-    const ipa = pron.ipa?.trim() ? formatIpa(pron.ipa) : '';
-    this.#phonetics.replaceChildren();
     if (respell) this.#phonetics.append(respellNode(respell));
     if (respell && ipa) this.#phonetics.append(document.createTextNode(' · '));
     if (ipa) this.#phonetics.append(ipaNode(ipa));

@@ -17,6 +17,7 @@ import { encodeWav, envelope, findSpeechBounds, toMono } from './wav.js';
 const nameInput = document.querySelector('#name');
 const pathInput = document.querySelector('#audio-path');
 const displaySelect = document.querySelector('#display');
+const showSelect = document.querySelector('#show');
 const takesEl = document.querySelector('#takes');
 const previewEl = document.querySelector('#preview');
 const snippetEl = document.querySelector('#snippet');
@@ -544,6 +545,7 @@ function renderPreview() {
 
   const element = document.createElement('say-my-name');
   element.setAttribute('display', displaySelect.value);
+  if (showSelect.value !== 'both') element.setAttribute('show', showSelect.value);
   element.append(document.createTextNode(name));
 
   const list = takes.map((take) => {
@@ -603,6 +605,7 @@ function renderSnippet() {
   const name = nameInput.value.trim() || 'Your name';
   const base = pathInput.value.trim().replace(/\/?$/, '/');
   const display = displaySelect.value;
+  const shown = showSelect.value;
 
   const entries = takes.map((take, index) => {
     const { label, lang, respell, ipa, synthetic } = fields(take);
@@ -610,14 +613,15 @@ function renderSnippet() {
     if (label) entry.label = label;
     if (lang) entry.lang = lang;
     if (take.buffer) entry.audio = base + fileNameFor(take, index);
-    if (respell) entry.respell = respell;
-    if (ipa) entry.ipa = ipa;
+    if (respell && shown !== 'ipa') entry.respell = respell;
+    if (ipa && shown !== 'respell') entry.ipa = ipa;
     if (synthetic) entry.synthetic = true;
     return entry;
   });
 
   const attrs = [];
   if (display !== 'inline') attrs.push(`display="${display}"`);
+  if (showSelect.value !== 'both') attrs.push(`show="${showSelect.value}"`);
 
   if (entries.length <= 1) {
     const entry = entries[0] ?? {};
@@ -665,6 +669,7 @@ nameInput.addEventListener('input', () => {
 });
 pathInput.addEventListener('input', refresh);
 displaySelect.addEventListener('change', refresh);
+showSelect.addEventListener('change', refresh);
 
 document.querySelector('#copy').addEventListener('click', async () => {
   const status = document.querySelector('#copy-status');
@@ -719,16 +724,19 @@ for (const button of document.querySelectorAll('.ghost-edit')) {
 // Display style as something you click and immediately see.
 for (const chip of document.querySelectorAll('.chip')) {
   chip.addEventListener('click', () => {
-    displaySelect.value = chip.dataset.display;
-    displaySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    const select = chip.dataset.display ? displaySelect : showSelect;
+    select.value = chip.dataset.display ?? chip.dataset.show;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
     syncChips();
   });
 }
 
 function syncChips() {
   for (const chip of document.querySelectorAll('.chip')) {
-    chip.setAttribute('aria-pressed', String(chip.dataset.display === displaySelect.value));
-    chip.classList.toggle('is-on', chip.dataset.display === displaySelect.value);
+    const value = chip.dataset.display ?? chip.dataset.show;
+    const on = value === (chip.dataset.display ? displaySelect.value : showSelect.value);
+    chip.setAttribute('aria-pressed', String(on));
+    chip.classList.toggle('is-on', on);
   }
 }
 syncChips();

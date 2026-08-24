@@ -60,6 +60,45 @@ test('renders the respelling above the name in ruby mode', async ({ page }) => {
   await expect(rt).toHaveText('zhah-EEL-sown');
 });
 
+test('stacks the written forms around the name in ruby mode', async ({ page }) => {
+  // "Above and below": respelling over the name like a dictionary entry, IPA under it.
+  const widgetEl = widget(page, 'case-ruby');
+  const boxes = await widgetEl.evaluate((el) => {
+    const root = el.shadowRoot!;
+    const pick = (part: string) =>
+      root.querySelector(`[part~="${part}"]`)!.getBoundingClientRect();
+    const name = root.querySelector('ruby')!.getBoundingClientRect();
+    return { respell: pick('respell').top, name: name.top, ipa: pick('ipa').top };
+  });
+
+  expect(boxes.respell).toBeLessThan(boxes.name + 1);
+  expect(boxes.ipa).toBeGreaterThan(boxes.name);
+
+  // The button stays on the name's own line rather than being pushed down with the IPA.
+  const rows = await widgetEl.evaluate((el) => {
+    const root = el.shadowRoot!;
+    return {
+      button: root.querySelector('button')!.getBoundingClientRect().top,
+      ipa: root.querySelector('[part~="ipa"]')!.getBoundingClientRect().top,
+    };
+  });
+  expect(rows.button).toBeLessThan(rows.ipa);
+});
+
+test('shows the respelling alone when asked to', async ({ page }) => {
+  const el = widget(page, 'case-respell-only');
+  await expect(el.locator('[part~="respell"]')).toHaveText('zhah-EEL-sown');
+  await expect(el.locator('[part~="ipa"]')).toHaveCount(0);
+});
+
+test('shows the IPA alone when asked to', async ({ page }) => {
+  const el = widget(page, 'case-ipa-only');
+  await expect(el.locator('[part~="ipa"]')).toHaveText('/ʒaˈiwsõ/');
+  // Ruby mode would normally put the respelling over the name; show="ipa" outranks it.
+  await expect(el.locator('[part~="respell"]')).toHaveCount(0);
+  await expect(el.locator('rt')).toHaveCount(0);
+});
+
 test('offers one labelled button per pronunciation', async ({ page }) => {
   const buttons = widget(page, 'case-variants').locator('button');
   await expect(buttons).toHaveCount(2);

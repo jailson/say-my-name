@@ -37,3 +37,6 @@ export type TtsPolicy =
 
 /** How the written pronunciation is displayed next to the name. */
 export type DisplayMode = 'none' | 'inline' | 'ruby' | 'tooltip';
+
+/** Which written forms are rendered: both of them, or one on its own. */
+export type WrittenForms = 'both' | 'respell' | 'ipa';

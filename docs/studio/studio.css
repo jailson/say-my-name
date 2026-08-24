@@ -267,7 +267,16 @@ input.inline-edit {
 
 /* ── Display chips ──────────────────────────────────────────────────────── */
 
-.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+.chip-rows { display: flex; flex-wrap: wrap; gap: 0.4rem 2rem; margin-top: 1rem; }
+
+.chips { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+
+.chips-label {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
 
 .chip {
   font: inherit;

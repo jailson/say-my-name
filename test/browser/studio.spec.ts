@@ -164,6 +164,36 @@ test.describe('studio', () => {
     await expect(page.locator('.in-ipa')).toHaveValue('ˈdʒon');
   });
 
+  test('starts in pt-BR', async ({ page }) => {
+    await page.goto(STUDIO);
+    await expect(page.locator('.in-lang').first()).toHaveValue('pt-BR');
+    await edit(page, 'ipa', 'ʒaˈiwsõ');
+    await expect(page.locator('#snippet')).toContainText('lang="pt-BR"');
+  });
+
+  test('the What chips pick which written form the widget shows', async ({ page }) => {
+    await page.goto(STUDIO);
+    await edit(page, 'ipa', 'maˈria');
+    await expect(page.locator('#preview [part~="respell"]')).toHaveCount(1);
+    await expect(page.locator('#preview [part~="ipa"]')).toHaveCount(1);
+
+    await page.locator('.chip[data-show="ipa"]').click();
+    await expect(page.locator('#preview [part~="respell"]')).toHaveCount(0);
+    await expect(page.locator('#preview [part~="ipa"]')).toHaveCount(1);
+    await expect(page.locator('#snippet')).toContainText('show="ipa"');
+    // A form the widget is not showing has no business in the snippet either.
+    await expect(page.locator('#snippet')).not.toContainText('respell=');
+
+    await page.locator('.chip[data-show="respell"]').click();
+    await expect(page.locator('#preview [part~="respell"]')).toHaveCount(1);
+    await expect(page.locator('#preview [part~="ipa"]')).toHaveCount(0);
+    await expect(page.locator('#snippet')).toContainText('show="respell"');
+    await expect(page.locator('#snippet')).not.toContainText('ipa=');
+
+    await page.locator('.chip[data-show="both"]').click();
+    await expect(page.locator('#snippet')).not.toContainText('show=');
+  });
+
   test('fills both fields from the name and language as you type', async ({ page }) => {
     // No button press: this is the whole point of the studio.
     await page.goto(STUDIO);

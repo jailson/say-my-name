@@ -116,25 +116,31 @@
           synthesized voice you picked deliberately and labelled honestly is a perfectly good
           answer.
         </p>
+        <h3>What this page can do itself</h3>
         <p>
-          The quickest route is <strong>Speak it</strong> above — it runs eSpeak in this tab,
-          fills in the IPA and generates the audio, and ticks
-          <strong>Synthesized voice</strong> for you. The voice is robotic, but it is
-          derived from real letter-to-sound rules rather than guessed at. If you want a
-          better-sounding one, generate a clip with any of these and bring it back with
-          <strong>File</strong>:
+          One engine runs here: <strong>eSpeak NG</strong>, in this tab. <strong>Speak it</strong>
+          fills in the IPA, generates the audio, and ticks <strong>Synthesized voice</strong>
+          for you. The voice is robotic, but it is derived from real letter-to-sound rules
+          rather than guessed at.
+        </p>
+        <p>
+          The <strong>voice dropdown</strong> beside each pronunciation picks between its 104
+          voices — same synthesizer, different vocal tract. Since the result is a file you
+          download and host, the voice you pick is the voice every visitor hears, unlike
+          browser speech synthesis where you get whatever that device has.
+        </p>
+
+        <h3>What you'd go elsewhere for</h3>
+        <p>
+          Nothing below runs here. These are tools you'd open yourself, generate a clip in,
+          and bring back with <strong>File</strong> — the file is then read in this tab like
+          any other, and still never uploaded anywhere.
         </p>
         <table>
           <thead>
             <tr><th>Tool</th><th>Voice</th><th>Uses your IPA?</th><th>Account?</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>Speak it</strong> (built in)</td>
-              <td>Robotic (eSpeak NG)</td>
-              <td>Derives it for you</td>
-              <td>No — runs in this tab</td>
-            </tr>
             <tr>
               <td><a href="https://itinerarium.github.io/phoneme-synthesis/">phoneme-synthesis</a></td>
               <td>Robotic (eSpeak)</td>
@@ -200,6 +206,9 @@
         <div class="take-detail">
           <input class="in-label" type="text" placeholder="label, e.g. Portuguese"
                  aria-label="Label" autocomplete="off" />
+          <select class="in-voice" aria-label="Voice">
+            <option value="">Default voice</option>
+          </select>
           <span class="rec-status hint" role="status" aria-live="polite">No audio yet</span>
         </div>
 

@@ -318,6 +318,14 @@ input.inline-edit {
 }
 .take-detail { margin-top: 0.4rem; font-size: 0.9rem; }
 
+/* The generic select rule is width: 100%, which would eat the whole row. */
+.in-voice {
+  width: auto;
+  max-width: 11rem;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.85rem;
+}
+
 .spacer { flex: 1 1 auto; }
 
 .pick {

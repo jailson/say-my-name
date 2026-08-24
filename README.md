@@ -101,6 +101,12 @@ audio it does three things: record in the browser, load a file you made elsewher
 a matching respelling, speak it, and tick `synthetic` for you. Nothing is uploaded in any of
 the three.
 
+One engine runs in the tab — eSpeak NG — and the voice dropdown picks between its 104
+voices. They are variants of one synthesizer rather than separate engines, so all of them
+are robotic, but the choice is baked into the file you download: unlike browser speech
+synthesis, the voice you pick is the voice every visitor hears. The other tools the studio
+mentions are ones you open yourself and bring a file back from; nothing but eSpeak runs here.
+
 The IPA and respelling **fill in by themselves** from the name and the language, as you
 type — no button. The first derivation of a visit downloads eSpeak (~9 MB) and says so while
 it runs; every one after that is a ~250 ms local call. **Speak it** additionally

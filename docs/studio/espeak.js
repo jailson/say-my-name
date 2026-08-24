@@ -39,13 +39,21 @@ export async function preloadEngine() {
   await engine();
 }
 
-/** eSpeak wants `pt-br`, not `pt-BR`. An empty tag falls back to English. */
-export function espeakVoice(lang) {
-  return (lang ?? '').trim().toLowerCase() || 'en-us';
+/**
+ * The `-v` value: a language, optionally with a voice variant after a `+`.
+ *
+ * eSpeak wants `pt-br`, not `pt-BR`, and an empty tag falls back to English. An unknown
+ * variant is ignored by the engine rather than being an error, so the caller can offer
+ * every variant for every language without checking the combinations.
+ */
+export function espeakVoice(lang, variant) {
+  const base = (lang ?? '').trim().toLowerCase() || 'en-us';
+  const chosen = (variant ?? '').trim();
+  return chosen ? `${base}+${chosen}` : base;
 }
 
 /**
- * Ask eSpeak how it would read `text` in `lang`.
+ * Ask eSpeak how it would read `text` in `lang`, optionally in a named voice variant.
  *
  * Returns the IPA it derived and a WAV of it saying exactly that, so the written and spoken
  * forms are consistent by construction rather than by the author's ear.
@@ -54,7 +62,7 @@ export function espeakVoice(lang) {
  * foreign origin will often come out wrong — which is why the caller presents this as a
  * starting point and leaves every field editable.
  */
-export async function suggest(text, lang) {
+export async function suggest(text, lang, variant) {
   const ESpeakNg = await engine();
 
   // One invocation produces both outputs; instantiating the module twice would mean
@@ -67,7 +75,7 @@ export async function suggest(text, lang) {
       'ipa',
       '--ipa', // plain IPA: no tie bars or zero-width joiners to strip
       '-v',
-      espeakVoice(lang),
+      espeakVoice(lang, variant),
       text,
     ],
     print: () => {},

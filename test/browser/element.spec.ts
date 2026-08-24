@@ -99,6 +99,34 @@ test('shows the IPA alone when asked to', async ({ page }) => {
   await expect(el.locator('rt')).toHaveCount(0);
 });
 
+test('hangs the tooltip under the name it belongs to', async ({ page }) => {
+  const el = widget(page, 'case-tooltip');
+  const tip = el.locator('[part~="phonetics"]');
+
+  // Hidden until asked for, but present so it can be described by aria-describedby.
+  await expect(tip).toHaveCSS('opacity', '0');
+
+  await el.hover();
+  await expect(tip).toHaveCSS('opacity', '1');
+
+  const geometry = await el.evaluate((host) => {
+    const box = host.getBoundingClientRect();
+    const tipBox = host.shadowRoot!.querySelector('[part~="phonetics"]')!.getBoundingClientRect();
+    return {
+      below: tipBox.top >= box.bottom - 1,
+      // Anchored to the name it describes, not to some corner of the page.
+      fromNameStart: Math.abs(tipBox.left - box.left),
+      onPage: tipBox.left >= 0 && tipBox.right <= document.documentElement.clientWidth,
+      coversName: tipBox.top < box.bottom - 1,
+    };
+  });
+
+  expect(geometry.below).toBe(true);
+  expect(geometry.coversName).toBe(false);
+  expect(geometry.onPage).toBe(true);
+  expect(geometry.fromNameStart).toBeLessThan(2);
+});
+
 test('offers one labelled button per pronunciation', async ({ page }) => {
   const buttons = widget(page, 'case-variants').locator('button');
   await expect(buttons).toHaveCount(2);

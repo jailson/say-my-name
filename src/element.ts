@@ -18,6 +18,9 @@ const STYLES = /* css */ `
   gap: var(--smn-gap, 0.4em);
   font: inherit;
   color: inherit;
+  /* Containing block for the tooltip, which otherwise anchors to the page and lands
+     somewhere unrelated to the name it belongs to. */
+  position: relative;
 }
 :host([hidden]) { display: none; }
 
@@ -50,9 +53,13 @@ rt {
 }
 .phonetics:empty { display: none; }
 
-/* Tooltip mode: revealed on hover or keyboard focus, never on hover alone. */
+/* Tooltip mode: revealed on hover or keyboard focus, never on hover alone.
+   Hangs under the name and starts where the name starts — centring it reads better but
+   runs off the edge whenever the name is near one, which is most of the time. */
 .phonetics.tip {
   position: absolute;
+  top: 100%;
+  inset-inline-start: 0;
   opacity: 0;
   pointer-events: none;
   transform: translateY(0.25em);
@@ -62,7 +69,12 @@ rt {
   border: 1px solid var(--smn-tip-border, currentColor);
   border-radius: 0.35em;
   padding: 0.15em 0.4em;
-  font-size: 0.8em;
+  /* Absolutely positioned boxes shrink to the space beside them; max-content undoes
+     that, and max-width keeps a long transcription from running off the page. */
+  width: max-content;
+  max-width: min(16em, 80vw);
+  white-space: normal;
+  text-align: center;
   z-index: 1;
 }
 :host(:hover) .phonetics.tip,

@@ -86,6 +86,7 @@ rt {
 .controls { display: inline-flex; gap: 0.25em; align-items: center; }
 
 button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.25em;
@@ -109,14 +110,35 @@ button .label { font-size: 0.85em; }
 
 svg { width: 1em; height: 1em; display: block; flex: none; }
 
-/* Playing state. The animation is decorative — the sound is the real feedback. */
-button[data-playing] svg { animation: smn-pulse 900ms ease-in-out infinite; }
-@keyframes smn-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.45; }
+/* A ring around the icon while the button is sounding: it sweeps with the recording's
+   own progress, so pressing again to stop is an obvious thing to do. Decoration only —
+   the sound is the real feedback, and the ring is masked out of the layout entirely. */
+button[data-playing]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: var(--smn-ring-size, 1.7em);
+  height: var(--smn-ring-size, 1.7em);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: var(--smn-ring-opacity, 0.55);
+  background: conic-gradient(currentColor calc(var(--smn-p, 0) * 360deg), transparent 0);
+  /* Punches the middle out, leaving a ring. The prefix is for Safari before 15.4. */
+  -webkit-mask: radial-gradient(closest-side, transparent 76%, #000 78%);
+  mask: radial-gradient(closest-side, transparent 76%, #000 78%);
 }
+
+/* Synthesis has no duration to measure, and neither does a clip still loading. A turning
+   arc says "working" without pretending to know how far along it is. */
+button[data-playing]:not([data-progress])::after {
+  background: conic-gradient(currentColor 0 25%, transparent 25%);
+  animation: smn-spin 900ms linear infinite;
+}
+@keyframes smn-spin { to { transform: rotate(1turn); } }
+
 @media (prefers-reduced-motion: reduce) {
-  button[data-playing] svg { animation: none; }
+  button[data-playing]:not([data-progress])::after { animation: none; }
   .phonetics.tip { transition: none; }
 }
 
@@ -163,6 +185,14 @@ export class SayMyNameElement extends HTMLElement {
   #phonetics: HTMLElement | null = null;
   #respellNode: HTMLElement | null = null;
   #status: HTMLElement | null = null;
+  /**
+   * Bumped every time playback starts or stops. Handlers capture the value they were
+   * created with and do nothing once it has moved on, so a callback that arrives late —
+   * a cancelled utterance always reports back after the fact — cannot reach in and
+   * silence, or talk over, whatever is playing by then.
+   */
+  #session = 0;
+  #frame = 0;
 
   constructor() {
     super();
@@ -181,8 +211,7 @@ export class SayMyNameElement extends HTMLElement {
   }
 
   disconnectedCallback(): void {
-    this.#player.stop();
-    cancelSpeech();
+    this.#silence();
   }
 
   /** The name being pronounced: the element's own text, or the `name` attribute. */
@@ -343,6 +372,8 @@ export class SayMyNameElement extends HTMLElement {
       button.title = 'Synthesized voice — not a recording';
     }
     if (describe) button.setAttribute('aria-describedby', 'phonetics');
+    // A press starts it, a second press stops it — so it is a toggle, and says so.
+    button.setAttribute('aria-pressed', 'false');
 
     button.append(icon(synthesized));
 
@@ -362,14 +393,23 @@ export class SayMyNameElement extends HTMLElement {
   }
 
   #activate(control: Control, button: HTMLButtonElement): void {
+    // Pressing the button that is already sounding stops it. Pressing it again starts
+    // the name over, which is what people do when they want to hear it a second time.
+    const wasPlaying = button.dataset['playing'] !== undefined;
+    this.#silence();
+    if (wasPlaying) {
+      this.#announce('Stopped.');
+      return;
+    }
+
     this.#active = control.index;
     this.#paintPhonetics();
     this.#announce('');
 
-    const playing = (on: boolean) => {
-      for (const other of this.#root.querySelectorAll('button')) delete other.dataset['playing'];
-      if (on) button.dataset['playing'] = '';
-    };
+    // Marked before anything is fetched, so the ring turns while the clip loads and a
+    // second press can call it off mid-load rather than only once the sound starts.
+    this.#markPlaying(button);
+    const session = this.#session;
 
     this.dispatchEvent(
       new CustomEvent('say-my-name:play', {
@@ -381,47 +421,92 @@ export class SayMyNameElement extends HTMLElement {
 
     if (control.kind === 'audio' && control.pron.audio) {
       this.#player.play(control.pron.audio, {
-        onstart: () => playing(true),
-        onend: () => playing(false),
+        onstart: () => this.#trackProgress(button, session),
+        onend: () => {
+          // Ignored once superseded: a cancelled utterance always reports back late.
+          if (session === this.#session) this.#silence();
+        },
         onerror: () => {
-          playing(false);
-          this.#recordingFailed(control);
+          if (session !== this.#session) return;
+          this.#silence();
+          this.#recordingFailed(control, button);
         },
       });
       return;
     }
 
-    this.#speak(control, () => playing(true), () => playing(false));
+    this.#speak(control, button);
   }
 
-  #speak(control: Control, onstart: () => void, onend: () => void): void {
+  /** Speak this pronunciation, driving `button`'s playing state for as long as it lasts. */
+  #speak(control: Control, button: HTMLButtonElement): void {
+    this.#markPlaying(button);
+    const session = this.#session;
+
     speak(
       speechTextFor(control.pron, this.name),
       { lang: control.pron.lang, voice: control.pron.voice, rate: this.#rate },
       {
-        onstart,
-        onend,
+        onend: () => {
+          // Ignored once superseded: a cancelled utterance always reports back late.
+          if (session === this.#session) this.#silence();
+        },
         onerror: () => {
-          onend();
+          if (session !== this.#session) return;
+          this.#silence();
           this.#announce('Sorry — this name could not be played.');
         },
       },
     );
   }
 
+  #markPlaying(button: HTMLButtonElement): void {
+    this.#session++;
+    button.dataset['playing'] = '';
+    button.setAttribute('aria-pressed', 'true');
+  }
+
+  /** Stop everything and put every button back to rest. */
+  #silence(): void {
+    this.#session++;
+    this.#player.stop();
+    cancelSpeech();
+    if (this.#frame) cancelAnimationFrame(this.#frame);
+    this.#frame = 0;
+    for (const button of this.#root.querySelectorAll('button')) {
+      button.removeAttribute('data-playing');
+      button.removeAttribute('data-progress');
+      button.removeAttribute('style'); // the ring's swept fraction, and nothing else
+      button.setAttribute('aria-pressed', 'false');
+    }
+  }
+
+  /**
+   * Sweep the ring in step with the recording. Until a duration is known — and it never
+   * is for synthesis — the ring keeps spinning instead, which promises nothing.
+   */
+  #trackProgress(button: HTMLButtonElement, session: number): void {
+    const step = () => {
+      if (session !== this.#session) return;
+      const played = this.#player.progress;
+      if (played !== null) {
+        button.dataset['progress'] = '';
+        button.style.setProperty('--smn-p', played.toFixed(3));
+      }
+      this.#frame = requestAnimationFrame(step);
+    };
+    step();
+  }
+
   /**
    * A missing or broken recording falls through to synthesis when the policy allows it,
    * so a moved audio file degrades to an imperfect answer rather than to silence.
    */
-  #recordingFailed(control: Control): void {
+  #recordingFailed(control: Control, button: HTMLButtonElement): void {
     const canFallBack = this.#ttsPolicy !== 'off' && canSpeak(control.pron.lang);
     if (canFallBack) {
       this.#announce('Recording unavailable — using a synthesized voice.');
-      this.#speak(
-        control,
-        () => undefined,
-        () => undefined,
-      );
+      this.#speak(control, button);
       return;
     }
     this.#announce('Sorry — the recording could not be played.');

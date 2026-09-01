@@ -90,6 +90,9 @@ So the component does three things about it: `tts-text` lets you feed the synthe
 something other than the spelling; a synthesized button draws a dashed sound wave and says
 "(synthesized voice)" in its accessible label; and if the browser has no voice for the
 language, the button is not rendered at all rather than mispronouncing you confidently.
+That last rule holds at the moment of speaking too, not only when the button is drawn: an
+utterance with no matching voice falls to the system default, which reads a Brazilian name
+in English. The component stays silent instead.
 
 ## A recording is the most faithful answer, not the only respectable one
 
@@ -146,6 +149,13 @@ uploaded file is never replaced by a regeneration.
 The element fires a `say-my-name:play` event (bubbles, composed) with
 `{ pronunciation, kind }` in its detail, where `kind` is `'audio'` or `'tts'`.
 
+## Playing
+
+A press plays; a second press stops; a third starts the name over. While a button is
+sounding it carries `data-playing`, and a ring is drawn around it — sweeping in time with
+a recording, turning on the spot for synthesis, which has no duration to promise. Both
+respect `prefers-reduced-motion`.
+
 ## Styling
 
 ```css
@@ -157,6 +167,8 @@ say-my-name {
   --smn-button-size: 0.9em;
   --smn-gap: 0.4em;
   --smn-focus: 2px solid #6b46c1;
+  --smn-ring-size: 1.7em;    /* the progress ring drawn around a playing button */
+  --smn-ring-opacity: 0.55;
 }
 
 say-my-name::part(button) { border-radius: 999px; }
@@ -170,6 +182,7 @@ Parts: `name`, `respell`, `phonetics`, `ipa`, `controls`, `button`, `button-synt
 - A real `<button>`, keyboard-reachable, with a focus ring that inherits from your page.
 - Labels read as sentences: "Hear how to pronounce Jailson — Portuguese (synthesized voice)".
 - IPA is `aria-hidden`; read aloud, the symbols come out as disconnected punctuation.
+- Play is a toggle button: `aria-pressed` follows what you can hear.
 - The playing animation respects `prefers-reduced-motion`.
 - Failures are announced through a polite live region rather than swallowed.
 - Without JavaScript the name is still just text. The component enhances; it never replaces.

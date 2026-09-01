@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { pickVoice, type VoiceLike } from '../src/tts.js';
 
 const voice = (name: string, lang: string, extra: Partial<VoiceLike> = {}): VoiceLike => ({
@@ -59,5 +59,56 @@ describe('pickVoice', () => {
 
   it('picks something sensible when no language is requested', () => {
     expect(pickVoice(VOICES, {})?.name).toBe('Samantha');
+  });
+});
+
+describe('speak', () => {
+  /**
+   * A fresh module per case: the voice list is cached the first time it is read, which is
+   * the point of it — but it means one test's machine cannot leak into the next.
+   */
+  const withVoices = async (voices: VoiceLike[]) => {
+    vi.resetModules();
+    const spoken: { text: string; voice: VoiceLike | null }[] = [];
+    vi.stubGlobal(
+      'SpeechSynthesisUtterance',
+      class {
+        voice: VoiceLike | null = null;
+        lang = '';
+        rate = 1;
+        constructor(public text: string) {}
+      },
+    );
+    vi.stubGlobal('speechSynthesis', {
+      getVoices: () => voices,
+      cancel: () => undefined,
+      speak: (utterance: { text: string; voice: VoiceLike | null }) => spoken.push(utterance),
+    });
+    return { tts: await import('../src/tts.js'), spoken };
+  };
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('stays silent rather than let the wrong language have a go at the name', async () => {
+    const { tts, spoken } = await withVoices(VOICES.filter((v) => v.lang.startsWith('en')));
+    const onerror = vi.fn();
+
+    tts.speak('Jailson', { lang: 'pt-BR' }, { onerror });
+
+    // Unassigned, the utterance falls to the system default and reads a Brazilian name in
+    // English — the exact failure this component exists to prevent.
+    expect(spoken).toEqual([]);
+    expect(onerror).toHaveBeenCalledOnce();
+  });
+
+  it('speaks in the matching voice when the machine has one', async () => {
+    const { tts, spoken } = await withVoices(VOICES);
+
+    tts.speak('Jailson', { lang: 'pt-BR' }, {});
+
+    expect(spoken).toHaveLength(1);
+    expect(spoken[0]?.voice?.name).toBe('Luciana');
   });
 });

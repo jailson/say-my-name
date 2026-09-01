@@ -150,8 +150,20 @@ export function speak(text: string, opts: SpeakOptions, handlers: SpeakHandlers 
   // Clears anything stuck in the queue; a no-op when idle.
   speechSynthesis.cancel();
 
+  const voices = getVoices();
+  const voice = pickVoice(voices, { lang: opts.lang, voice: opts.voice });
+
+  // Refuse rather than let the default voice have a go. Without a voice assigned, most
+  // engines fall back to the system default and read a Brazilian name in English — the
+  // exact failure this component exists to prevent. Silence is the better answer.
+  // (An empty list means the engine has not reported yet; `utterance.lang` still steers
+  // it, and on iOS this is the only path that works inside the first user gesture.)
+  if (!voice && voices.length) {
+    handlers.onerror?.(new Error(`no voice available for ${opts.lang ?? 'this name'}`));
+    return;
+  }
+
   const utterance = new SpeechSynthesisUtterance(text);
-  const voice = pickVoice(getVoices(), { lang: opts.lang, voice: opts.voice });
   if (voice) utterance.voice = voice as SpeechSynthesisVoice;
   if (opts.lang) utterance.lang = opts.lang;
   // Names are short and often unfamiliar; a touch slower than default lands better.

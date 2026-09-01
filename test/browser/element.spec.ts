@@ -206,3 +206,52 @@ test('keyboard users can reach and fire the button', async ({ page }) => {
   await page.keyboard.press('Enter');
   expect(await played).toBe(true);
 });
+
+test('pressing the button again stops it, and once more starts it over', async ({ page }) => {
+  // Driven synchronously so the 0.15s fixture clip cannot end mid-test and shift the
+  // meaning of the next press.
+  const playing = await widget(page, 'case-audio').evaluate((el) => {
+    const button = el.shadowRoot?.querySelector('button');
+    const seen: boolean[] = [];
+    for (let i = 0; i < 3; i += 1) {
+      button?.click();
+      seen.push(button?.dataset['playing'] !== undefined);
+    }
+    return seen;
+  });
+  expect(playing).toEqual([true, false, true]);
+  await expect(widget(page, 'case-audio').locator('button')).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+});
+
+test('tearing a clip down never starts a synthesized voice over the next one', async ({
+  page,
+}) => {
+  // Detaching the old <audio> fires a stray `error`. Read as a broken recording, it used
+  // to answer with synthesis — which then talked over the clip the new press had begun.
+  await page.evaluate(() => {
+    const spoken: string[] = [];
+    (window as unknown as { spoken: string[] }).spoken = spoken;
+    const original = speechSynthesis.speak.bind(speechSynthesis);
+    speechSynthesis.speak = (utterance: SpeechSynthesisUtterance) => {
+      spoken.push(utterance.text);
+      original(utterance);
+    };
+  });
+
+  await widget(page, 'case-audio').evaluate((el) => {
+    const button = el.shadowRoot?.querySelector('button');
+    button?.click(); // play
+    button?.click(); // stop, tearing the element down
+    button?.click(); // play again
+  });
+
+  // The stray error lands a few tens of milliseconds after the teardown, so give it room.
+  await page.waitForTimeout(500);
+  expect(await page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)).toEqual(
+    [],
+  );
+  await expect(widget(page, 'case-audio').locator('[role="status"]')).toHaveText('');
+});

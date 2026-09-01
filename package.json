@@ -1,6 +1,6 @@
 {
   "name": "@jailson/say-my-name",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A tiny web component that shows people how to pronounce your name: your own recording, a dictionary-style phonetic spelling, and optional speech synthesis.",
   "keywords": [
     "pronunciation",

@@ -6,7 +6,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write # npm provenance
+  id-token: write # OIDC identity for npm trusted publishing
 
 jobs:
   publish:
@@ -20,13 +20,16 @@ jobs:
           cache: npm
           registry-url: https://registry.npmjs.org
 
+      # Node 22 ships npm 10.x; trusted publishing needs 11.5.1 or newer.
+      - run: npm install -g npm@latest
+
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
       - run: npm run size
 
+      # No token: npm exchanges the workflow's OIDC identity for a short-lived
+      # credential, and attaches a provenance attestation on its own.
       - name: Publish
-        run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
